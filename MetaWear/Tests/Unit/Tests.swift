@@ -40,14 +40,17 @@ import BoltsSwift
 
 class Tests: XCTestCase {
     
-    func testConnect() {
-        let expectation = XCTestExpectation(description: "expectation")
-        let device = MetaWear.spoof()
-        device.logDelegate = ConsoleLogger.shared
-        device.connectAndSetup().continueWith { t in
-            print(t)
-            expectation.fulfill()
+    func testConnect() throws {
+        let expectation = XCTestExpectation(description: "Spoofed device is discovered")
+        MetaWear.spoof { device, spec, scanner in
+            device.logDelegate = ConsoleLogger.shared
+            device.connectAndSetup().continueWith { t in
+                expectation.fulfill()
+#warning("How would you recommend mocking mbl_mw_metawearboard_initialize? MetaWear will cancel connection upon failure at line 458.")
+            }
         }
-        wait(for: [expectation], timeout: 60)
+        self.wait(for: [expectation], timeout: 60)
     }
+
+
 }

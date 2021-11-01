@@ -33,171 +33,221 @@
  * contact MbientLab via email: hello@mbientlab.com
  */
 
-import CoreBluetooth
+import CoreBluetoothMock
 import MetaWearCpp
 
-/// Fake peripheral that case be instantiated in the iOS simulator
-class MockPeripheral: CBPeripheral {
-    private var mockName: String?
-    override var name: String? {
-        get { return mockName }
-        set { mockName = newValue }
+// MARK: - Create Spoofs
+
+public extension MetaWear {
+
+    /// Create a fake MetaWear that can be instantiated in the iOS simulator for Unit and UI Tests.
+    /// - Parameters:
+    ///   - name: Device name
+    ///   - id: UUID string
+    ///   - mac: MetaWear MAC address
+    ///   - info: Preset MetaWear firmware, hardware, and model/serial numbers
+    ///   - options: Application launch options
+    ///   - loaded: Returns a discovered MetaWear, the mock peripheral object that can send .simulate commands, and the mock scanner that discovered the MetaWear.
+    static func spoof(name: String = "unittest",
+                             id: String = "CC5CEEF1-C8B9-47BF-9B5D-E7329CED353D",
+                             mac: String = "BA:AA:AD:F0:00:0D",
+                             info: DeviceInformation = .metaMotionC,
+                             options: [String : Any]? = nil,
+                             didLoad: @escaping (MetaWear, CBMPeripheralSpec, MetaWearScanner) -> Void
+    ) {
+
+        let mockSpec = CBMPeripheralSpec.makeMockMetaMotion(
+            name: name, id: id, mac: mac, info: info,
+            advertisingInterval: 0.25,
+            connectionInterval: 0.15
+        )
+        let scanner = spoofScanner(options: options)
+
+        func didDiscover(_ device: MetaWear) {
+            device.mac = mac
+            device.info = info
+            didLoad(device, mockSpec, scanner)
+        }
+
+        CBMCentralManagerMock.simulatePeripherals([mockSpec])
+        CBMCentralManagerMock.simulatePowerOn()
+        mockSpec.simulateProximityChange(.immediate)
+        scanner.startScan(allowDuplicates: false, callback: didDiscover)
     }
-    private var mockIdentifier: UUID
-    override var identifier: UUID {
-        get { return mockIdentifier }
-        set { mockIdentifier = newValue }
+
+    /// Create a fake scanner that can be instantiated in the iOS simulator for Unit and UI tests.
+    static func spoofScanner(options: [String : Any]? = nil) -> MetaWearScanner {
+        let spoof = MockMetaWearScanner(forceMock: true)
+        spoof.central = CBMCentralManagerMock(delegate: spoof, queue: spoof.bleQueue, options: options)
+        return spoof
     }
-    private weak var mockDelegate: CBPeripheralDelegate?
-    override var delegate: CBPeripheralDelegate? {
-        get { return mockDelegate }
-        set { mockDelegate = newValue }
+}
+
+#warning("Discuss: What's the best strategy to intercept Cpp calls for mocking?")
+public class MockMetaWearScanner: MetaWearScanner {}
+
+// MARK: - CBMPeripheral Mocks
+
+public extension CBMPeripheralSpec {
+
+    static func makeMockMetaMotion(name: String,
+                            id: String,
+                            mac: String,
+                            info: DeviceInformation,
+                            advertisingInterval: TimeInterval = 0.25,
+                            connectionInterval: TimeInterval = 0.15
+    ) -> CBMPeripheralSpec {
+
+        let uuid = UUID(uuidString: id)!
+        return CBMPeripheralSpec
+            .simulatePeripheral(
+                identifier: uuid,
+                proximity: .outOfRange
+            )
+            .advertising(
+                advertisementData: [
+                    CBMAdvertisementDataLocalNameKey : name,
+                    CBMAdvertisementDataServiceUUIDsKey : [CBMUUID.metaWearService],
+                    CBMAdvertisementDataIsConnectable : true as NSNumber,
+                ],
+                withInterval: advertisingInterval,
+                alsoWhenConnected: false
+            )
+            .connectable(
+                name: name,
+                services: [.mockMetaWearService, .mockDisService, .mockBatteryService],
+                delegate: MetaMotionSpecDelegate(name: name, id: uuid, mac: mac, info: info),
+                connectionInterval: connectionInterval,
+                mtu: 23
+            )
+            .build()
     }
-    private var mockServices: [CBService]?
-    override var services: [CBService]? {
-        get { return mockServices }
-        set { mockServices = newValue }
+}
+
+
+public class MetaMotionSpecDelegate {
+
+    public let mockName: String
+    public let mockID: UUID
+    public let mockMac: String
+    public private(set) var info: DeviceInformation
+    public private(set) var modules: [UInt8: MockModule] = [:]
+    // Settable via the CBMPeripheralSpec instance
+    public fileprivate(set) var metaWearNotificationData: Data? = nil
+
+    public init(name: String, id: UUID, mac: String, info: DeviceInformation) {
+        self.mockName = name
+        self.mockID = id
+        self.mockMac = mac
+        self.info = info
     }
-    private var mockState = CBPeripheralState.disconnected
-    override var state: CBPeripheralState {
-        get { return mockState }
-        set { mockState = newValue }
-    }
-    override var canSendWriteWithoutResponse: Bool {
-        return true
-    }
-    private var info: DeviceInformation
-    private var notification: CBMutableCharacteristic
-    private var modules: [UInt8: MockModule] = [:]
+
     private func addModule(_ module: MockModule) {
         modules[module.modId] = module
     }
-    
-    private convenience init(id: String, info: DeviceInformation, name: String? = nil) {
-        // TO DO - FIX MOCKS
-        self.init(id: id, info: info)
-        self.mockName = name
-        self.info = info
-        self.notification = CBMutableCharacteristic(type: .metaWearNotification, properties: .notify, value: nil, permissions: .readable)
-        self.mockIdentifier = UUID(uuidString: id)!
+}
+
+extension MetaMotionSpecDelegate: CBMPeripheralSpecDelegate {
+
+    public func peripheralDidReceiveConnectionRequest(_ peripheral: CBMPeripheralSpec) -> Result<Void, Error> {
+        addModule(MockModule.mechanicalSwitch(peripheral: peripheral))
+        addModule(MockModule.led(peripheral: peripheral))
+        addModule(MockModule.accelBMI160(peripheral: peripheral))
+        addModule(MockModule.iBeacon(peripheral: peripheral))
+        addModule(MockModule.dataProcessor(peripheral: peripheral))
+        addModule(MockModule.event(peripheral: peripheral))
+        addModule(MockModule.logging(peripheral: peripheral))
+        addModule(MockModule.timer(peripheral: peripheral))
+        addModule(MockModule.macro(peripheral: peripheral))
+        addModule(MockModule.settings(peripheral: peripheral))
+        addModule(MockModule.magBMM150(peripheral: peripheral))
+        addModule(MockModule.gyroBMI160(peripheral: peripheral))
+        addModule(MockModule.sensorFusion(peripheral: peripheral))
+        addModule(MockModule.testDebug(peripheral: peripheral))
+        return .success(())
     }
-    
-    static func create(id: String, info: DeviceInformation, name: String? = nil) -> CBPeripheral {
-        let peripheral = MockPeripheral(id: id, info: info, name: name)
-        
-        peripheral.addModule(MockModule.mechanicalSwitch(peripheral: peripheral))
-        peripheral.addModule(MockModule.led(peripheral: peripheral))
-        peripheral.addModule(MockModule.accelBMI160(peripheral: peripheral))
-        peripheral.addModule(MockModule.iBeacon(peripheral: peripheral))
-        peripheral.addModule(MockModule.dataProcessor(peripheral: peripheral))
-        peripheral.addModule(MockModule.event(peripheral: peripheral))
-        peripheral.addModule(MockModule.logging(peripheral: peripheral))
-        peripheral.addModule(MockModule.timer(peripheral: peripheral))
-        peripheral.addModule(MockModule.macro(peripheral: peripheral))
-        peripheral.addModule(MockModule.settings(peripheral: peripheral))
-        peripheral.addModule(MockModule.magBMM150(peripheral: peripheral))
-        peripheral.addModule(MockModule.gyroBMI160(peripheral: peripheral))
-        peripheral.addModule(MockModule.sensorFusion(peripheral: peripheral))
-        peripheral.addModule(MockModule.testDebug(peripheral: peripheral))
-        //        // This is needed to prevent crashing when disposed
-        //        peripheral.addObserver(peripheral, forKeyPath: #keyPath(MockPeripheral.delegate), options: [], context: nil)
-        return peripheral
+
+    public func peripheral(_ peripheral: CBMPeripheralSpec, didReceiveReadRequestFor characteristic: CBMCharacteristicMock) -> Result<Data, Error> {
+        switch characteristic.uuid {
+            case .disModelNumber:       return .success(info.modelNumber.data(using: .utf8)!)
+            case .disSerialNumber:      return .success(info.serialNumber.data(using: .utf8)!)
+            case .disFirmwareRev:       return .success(info.firmwareRevision.data(using: .utf8)!)
+            case .disHardwareRev:       return .success(info.hardwareRevision.data(using: .utf8)!)
+            case .disManufacturerName:  return .success(info.manufacturer.data(using: .utf8)!)
+            case .batteryLife:          return .success(Data([99]))
+                #warning("Is this should be a valid read path for .metaWearNotification? In Nordic's mock, prior messageSend(modId:regId:notifyEn:data) runs through CBMPeripheralSpec.simulateValueUpdate that routes that data to all CBMCentralManagers to notify peripherals to call their CBPeripheralDelegates.")
+            case .metaWearNotification:
+                guard let notification = metaWearNotificationData else { fallthrough }
+                return .success(notification)
+
+            default:                    return .failure(MetaWearError.operationFailed(message: "Cannot read characteristic"))
+        }
     }
-    
-    override func writeValue(_ data: Data, for characteristic: CBCharacteristic, type: CBCharacteristicWriteType) {
+
+    public func peripheral(_ peripheral: CBMPeripheralSpec, didReceiveWriteRequestFor descriptor: CBMDescriptorMock, data: Data) -> Result<Void, Error> {
         let message = data.message
         if let module = modules[message.modId] {
             module.processMessage(message)
         } else if message.regId == 0x80 {
             // Response to mod info reads with a null response
-            messageSend(modId: message.modId, regId: message.regId, notifyEn: true, data: nil)
+            peripheral.messageSend(modId: message.modId, regId: message.regId, notifyEn: true, data: nil)
         }
-    }
-    
-    override func readValue(for characteristic: CBCharacteristic) {
-        var error: Error? = nil
-        let mCharacteristic = characteristic as! CBMutableCharacteristic
-        
-        switch characteristic.uuid {
-        case .disModelNumber:
-            mCharacteristic.value = info.modelNumber.data(using: .utf8)!
-        case .disSerialNumber:
-            mCharacteristic.value = info.serialNumber.data(using: .utf8)!
-        case .disFirmwareRev:
-            mCharacteristic.value = info.firmwareRevision.data(using: .utf8)!
-        case .disHardwareRev:
-            mCharacteristic.value = info.hardwareRevision.data(using: .utf8)!
-        case .disManufacturerName:
-            mCharacteristic.value = info.manufacturer.data(using: .utf8)!
-        case .batteryLife:
-            mCharacteristic.value = Data([99])
-        default:
-            error = MetaWearError.operationFailed(message: "can't read characteristic")
-        }
-        
-        MockCentralManager.shared.bleQueue.async {
-            self.mockDelegate?.peripheral?(self, didUpdateValueFor: characteristic, error: error)
-        }
-    }
-    override func setNotifyValue(_ enabled: Bool, for characteristic: CBCharacteristic) {
-        MockCentralManager.shared.bleQueue.async {
-            self.mockDelegate?.peripheral?(self, didUpdateNotificationStateFor: characteristic, error: nil)
-        }
-    }
-    
-    override func discoverServices(_ serviceUUIDs: [CBUUID]?) {
-        MockCentralManager.shared.bleQueue.async {
-            self.services = [
-                CBMutableService(type: CBUUID.metaWearService, primary: true),
-                CBMutableService(type: CBUUID.disService, primary: false),
-                CBMutableService(type: CBUUID.batteryService, primary: false)
-            ]
-            self.mockDelegate?.peripheral?(self, didDiscoverServices: nil)
-        }
-    }
-    
-    override func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, for service: CBService) {
-        MockCentralManager.shared.bleQueue.async {
-            if let mService = service as? CBMutableService {
-                switch service.uuid {
-                case .metaWearService:
-                    mService.characteristics = [
-                        self.notification,
-                        CBMutableCharacteristic(type: .metaWearCommand, properties: [.writeWithoutResponse, .write], value: nil, permissions: .writeable),
-                    ]
-                case .disService:
-                    mService.characteristics = [
-                        CBMutableCharacteristic(type: .disModelNumber, properties: .read, value: nil, permissions: .readable),
-                        CBMutableCharacteristic(type: .disSerialNumber, properties: .read, value: nil, permissions: .readable),
-                        CBMutableCharacteristic(type: .disFirmwareRev, properties: .read, value: nil, permissions: .readable),
-                        CBMutableCharacteristic(type: .disHardwareRev, properties: .read, value: nil, permissions: .readable),
-                        CBMutableCharacteristic(type: .disManufacturerName, properties: .read, value: nil, permissions: .readable)
-                    ]
-                case .batteryService:
-                    mService.characteristics = [
-                        CBMutableCharacteristic(type: .batteryLife, properties: .read, value: nil, permissions: .readable),
-                    ]
-                default:
-                    break
-                }
-            }
-            self.mockDelegate?.peripheral?(self, didDiscoverCharacteristicsFor: service, error: nil)
-        }
-    }
-    
-    func messageSend(modId: UInt8, regId: UInt8, notifyEn: Bool, data: Data?) {
-        if (notifyEn) {
-            MockCentralManager.shared.bleQueue.async {
-                var header = Data([modId, regId])
-                if let data = data {
-                    header.append(data)
-                }
-                self.notification.value = header
-                self.mockDelegate?.peripheral?(self, didUpdateValueFor: self.notification, error: nil)
-            }
-        }
+        return .success(())
     }
 }
+
+// MARK: - Mock MetaWear Module to CBMPeripheralSpec Interaction
+
+public extension CBMPeripheralSpec {
+
+    func messageSend(modId: UInt8, regId: UInt8, notifyEn: Bool, data: Data?) {
+        guard notifyEn, let delegate = self.connectionDelegate as? MetaMotionSpecDelegate else { return }
+        var header = Data([modId, regId])
+        if let data = data { header.append(data) }
+        delegate.metaWearNotificationData = data
+        self.simulateValueUpdate(header, for: .metaWearNotification)
+    }
+}
+
+
+// MARK: - Mock Characteristics
+
+extension CBMCharacteristicMock {
+
+    static let disModelNumber = CBMCharacteristicMock(type: .disModelNumber, properties: .read)
+    static let disSerialNumber = CBMCharacteristicMock(type: .disSerialNumber, properties: .read)
+    static let disFirmwareRev = CBMCharacteristicMock(type: .disFirmwareRev, properties: .read)
+    static let disHardwareRev = CBMCharacteristicMock(type: .disHardwareRev, properties: .read)
+    static let disManufacturerName = CBMCharacteristicMock(type: .disManufacturerName, properties: .read)
+    static let batteryLife = CBMCharacteristicMock(type: .batteryLife, properties: .read)
+    static let metaWearNotification = CBMCharacteristicMock(type: .metaWearNotification, properties: .read)
+    static let metaWearCommand = CBMCharacteristicMock(type: .metaWearCommand, properties: [.writeWithoutResponse, .write])
+}
+
+// MARK: - Mock Services
+
+extension CBMServiceMock {
+
+    static let mockBatteryService = CBMServiceMock(
+        type: .batteryService,
+        primary: false,
+        characteristics: .batteryLife
+    )
+
+    static let mockMetaWearService = CBMServiceMock(
+        type: .metaWearService,
+        primary: true,
+        characteristics: .metaWearCommand, .metaWearNotification
+    )
+
+    static let mockDisService = CBMServiceMock(
+        type: .disService,
+        primary: false,
+        characteristics: .disModelNumber, .disSerialNumber, .disFirmwareRev, .disHardwareRev, .disManufacturerName
+    )
+}
+
+// MARK: - Mock MetaWear Device Info
 
 extension DeviceInformation {
     public static let metaMotionC = DeviceInformation(
@@ -229,19 +279,3 @@ extension DeviceInformation {
         hardwareRevision: "0.1"
     )
 }
-
-extension MetaWear {
-    /// Create a fake MetaWear that can be instantiated in the iOS simulator for Unit Tests
-    public static func spoof(name: String = "unittest",
-                             id: String = "CC5CEEF1-C8B9-47BF-9B5D-E7329CED353D",
-                             mac: String = "BA:AA:AD:F0:00:0D",
-                             info: DeviceInformation = .metaMotionC) -> MetaWear {
-        let peripheral = MockPeripheral.create(id: id, info: info, name: name)
-        let device = MetaWear(peripheral: peripheral, scanner: MockCentralManager.shared)
-        MockCentralManager.shared.deviceMap[peripheral] = device
-        device.mac = mac
-        device.info = info
-        return device
-    }
-}
-

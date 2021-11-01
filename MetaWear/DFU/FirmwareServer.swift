@@ -158,7 +158,7 @@ extension URL {
 #if DEBUG
         print("Downloading... \(url)")
 #endif
-        session.downloadTask(with: url) { (location, response, error) in
+        FirmwareServer.session.downloadTask(with: url) { (location, response, error) in
             guard error == nil else {
                 source.trySet(error: error!)
                 return

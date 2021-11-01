@@ -34,29 +34,19 @@
  */
 
 import Foundation
+import CoreBluetoothMock
 
-struct MessagePayload {
-    let modId: UInt8
-    let regId: UInt8
-    let data: Data
-}
+public typealias MessageHandler = (MessagePayload) -> Void
+public typealias NotificationMessageHandler = (MessagePayload, Bool) -> Void
+public typealias MockedPeripheral = CBMPeripheralSpec
 
-extension Data {
-    var message: MessagePayload {
-        return MessagePayload(modId: self[0], regId: self[1], data: Data(suffix(from: 2)))
-    }
-}
-
-typealias MessageHandler = (MessagePayload) -> Void
-typealias NotificationMessageHandle = (MessagePayload, Bool) -> Void
-
-class MockModule {
-    let peripheral: MockPeripheral
-    let modId: UInt8
-    var handlers: [UInt8: MessageHandler] = [:]
-    var entries: [UInt8] = Array(0...0xFF)
+public class MockModule {
+    public let peripheral: MockedPeripheral
+    public let modId: UInt8
+    public private(set) var handlers: [UInt8: MessageHandler] = [:]
+    public private(set) var entries: [UInt8] = Array(0...0xFF)
     
-    init(peripheral: MockPeripheral, modId: UInt8, modImpl: UInt8, modRev: UInt8, extra: Data? = nil) {
+    internal init(peripheral: MockedPeripheral, modId: UInt8, modImpl: UInt8, modRev: UInt8, extra: Data? = nil) {
         self.peripheral = peripheral
         self.modId = modId
         
@@ -69,63 +59,63 @@ class MockModule {
         }
     }
     
-    func processMessage(_ payload: MessagePayload) {
+    public func processMessage(_ payload: MessagePayload) {
         if let handler = handlers[payload.regId] {
             handler(payload)
         }
     }
     
-    func handleRead(regId: UInt8, handler: @escaping MessageHandler) {
+    public func handleRead(regId: UInt8, handler: @escaping MessageHandler) {
         handlers[regId | 0x80] = handler
     }
     
-    func handleWrite(regId: UInt8, handler: @escaping MessageHandler) {
+    public func handleWrite(regId: UInt8, handler: @escaping MessageHandler) {
         handlers[regId] = handler
     }
     
-    func handleNotification(regId: UInt8, handler: @escaping NotificationMessageHandle) {
+    public func handleNotification(regId: UInt8, handler: @escaping NotificationMessageHandler) {
         handlers[regId] = { payload in
             handler(payload, payload.data[0] != 0)
         }
     }
     
-    static func mechanicalSwitch(peripheral: MockPeripheral) -> MockModule {
+    static func mechanicalSwitch(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0x1
         return MockModule(peripheral: peripheral, modId: modId, modImpl: 0, modRev: 0)
     }
     
-    static func led(peripheral: MockPeripheral) -> MockModule {
+    static func led(peripheral: MockedPeripheral) -> MockModule {
         let extra = Data([0x3, 0x0])
         let modId: UInt8 = 0x2
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 0, modRev: 1, extra: extra)
         return module
     }
     
-    static func accelBMI160(peripheral: MockPeripheral) -> MockModule {
+    static func accelBMI160(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0x3
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 1, modRev: 2)
         return module
     }
     
-    static func accelBMI270(peripheral: MockPeripheral) -> MockModule {
+    static func accelBMI270(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0x3
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 4, modRev: 0)
         return module
     }
     
-    static func magBMM150(peripheral: MockPeripheral) -> MockModule {
+    static func magBMM150(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0x15
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 0, modRev: 2)
         return module
     }
     
-    static func iBeacon(peripheral: MockPeripheral) -> MockModule {
+    static func iBeacon(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0x7
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 0, modRev: 0)
         return module
     }
     
-    static func genericEntriesModule(peripheral: MockPeripheral,
+    static func genericEntriesModule(peripheral: MockedPeripheral,
                                      modId: UInt8,
                                      modImpl: UInt8,
                                      modRev: UInt8,
@@ -150,7 +140,7 @@ class MockModule {
         return module
     }
     
-    static func dataProcessor(peripheral: MockPeripheral) -> MockModule {
+    static func dataProcessor(peripheral: MockedPeripheral) -> MockModule {
         return genericEntriesModule(peripheral: peripheral,
                                     modId: 0x9,
                                     modImpl: 0,
@@ -161,7 +151,7 @@ class MockModule {
                                     removeAllReg: 8)
     }
     
-    static func event(peripheral: MockPeripheral) -> MockModule {
+    static func event(peripheral: MockedPeripheral) -> MockModule {
         return genericEntriesModule(peripheral: peripheral,
                                     modId: 0xA,
                                     modImpl: 0,
@@ -172,7 +162,7 @@ class MockModule {
                                     removeAllReg: 5)
     }
     
-    static func logging(peripheral: MockPeripheral) -> MockModule {
+    static func logging(peripheral: MockedPeripheral) -> MockModule {
         let module = genericEntriesModule(peripheral: peripheral,
                                           modId: 0xB,
                                           modImpl: 0,
@@ -187,7 +177,7 @@ class MockModule {
         return module
     }
     
-    static func timer(peripheral: MockPeripheral) -> MockModule {
+    static func timer(peripheral: MockedPeripheral) -> MockModule {
         return genericEntriesModule(peripheral: peripheral,
                                     modId: 0xC,
                                     modImpl: 0,
@@ -198,42 +188,58 @@ class MockModule {
                                     removeAllReg: 8)
     }
     
-    static func macro(peripheral: MockPeripheral) -> MockModule {
+    static func macro(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0xF
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 0, modRev: 2, extra: Data([0x8, 0x7]))
         return module
     }
     
-    static func settings(peripheral: MockPeripheral) -> MockModule {
+    static func settings(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0x11
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 0, modRev: 7, extra: Data([0x3]))
         return module
     }
     
-    static func gyroBMI160(peripheral: MockPeripheral) -> MockModule {
+    static func gyroBMI160(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0x13
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 0, modRev: 1)
         return module
     }
     
-    static func gyroBMI270(peripheral: MockPeripheral) -> MockModule {
+    static func gyroBMI270(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0x13
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 1, modRev: 0)
         return module
     }
     
-    static func sensorFusion(peripheral: MockPeripheral) -> MockModule {
+    static func sensorFusion(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0x19
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 0, modRev: 2, extra: Data([0x03,0x00,0x06,0x00,0x02,0x00,0x01,0x00]))
         return module
     }
     
-    static func testDebug(peripheral: MockPeripheral) -> MockModule {
+    static func testDebug(peripheral: MockedPeripheral) -> MockModule {
         let modId: UInt8 = 0xFE
         let module = MockModule(peripheral: peripheral, modId: modId, modImpl: 0, modRev: 3)
         return module
     }
 }
+
+// MARK: - Model
+
+public struct MessagePayload {
+    public let modId: UInt8
+    public let regId: UInt8
+    public let data: Data
+}
+
+extension Data {
+    var message: MessagePayload {
+        return MessagePayload(modId: self[0], regId: self[1], data: Data(suffix(from: 2)))
+    }
+}
+
+// MARK: - Helpers
 
 extension Array {
     func insertionIndexOf(elem: Element, isOrderedBefore: (Element, Element) -> Bool) -> Int {

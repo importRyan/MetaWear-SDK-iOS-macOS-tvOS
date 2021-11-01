@@ -33,7 +33,6 @@
  * contact MbientLab via email: hello@mbientlab.com
  */
 
-import CoreBluetooth
 import MetaWearCpp
 
 

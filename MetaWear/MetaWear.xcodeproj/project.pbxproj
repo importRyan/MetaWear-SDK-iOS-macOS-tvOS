@@ -852,30 +852,30 @@
 				TargetAttributes = {
 					40405831209A83CA00591D6B = {
 						CreatedOnToolsVersion = 9.3;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						ProvisioningStyle = Automatic;
 					};
 					4040583D209A83CB00591D6B = {
 						CreatedOnToolsVersion = 9.3;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						LastSwiftMigration = 1010;
 						ProvisioningStyle = Automatic;
 					};
 					40703E051D94AE3500F38FF0 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						LastSwiftMigration = 0940;
 						ProvisioningStyle = Automatic;
 					};
 					40703E301D94B8A700F38FF0 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						LastSwiftMigration = 0930;
 						ProvisioningStyle = Automatic;
 					};
 					40703E5A1D94C06800F38FF0 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
@@ -885,20 +885,20 @@
 					};
 					40703EA51D94C37500F38FF0 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						LastSwiftMigration = 1010;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 40703E5A1D94C06800F38FF0;
 					};
 					40781FDF1D9DD41900FF5134 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						LastSwiftMigration = 0930;
 						ProvisioningStyle = Automatic;
 					};
 					407820171D9DD60500FF5134 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.BackgroundModes.appletvos = {
@@ -908,19 +908,19 @@
 					};
 					4078202C1D9DD60500FF5134 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						LastSwiftMigration = 0930;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 407820171D9DD60500FF5134;
 					};
 					40915FC41D94D392008A5F24 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						ProvisioningStyle = Automatic;
 					};
 					40915FEE1D94D478008A5F24 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = S2273LZ6GL;
+						DevelopmentTeam = FVC2SFVFYG;
 						LastSwiftMigration = 0930;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 40915FC41D94D392008A5F24;
@@ -1100,6 +1100,7 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS/Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Bolts-Swift-macOS/BoltsSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/CoreBluetoothMock-macOS/CoreBluetoothMock.framework",
 				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-DFU-Mocks-UI-macOS/MetaWear.framework",
 				"${BUILT_PRODUCTS_DIR}/ZIPFoundation-macOS/ZIPFoundation.framework",
 				"${BUILT_PRODUCTS_DIR}/iOSDFULibrary-macOS/iOSDFULibrary.framework",
@@ -1107,6 +1108,7 @@
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BoltsSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CoreBluetoothMock.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MetaWear.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZIPFoundation.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/iOSDFULibrary.framework",
@@ -1142,6 +1144,7 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-macOS-MetaWearIntegrationTestHost-macOS/Pods-MetaWear-MetaWear-macOS-MetaWearIntegrationTestHost-macOS-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Bolts-Swift-macOS/BoltsSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/CoreBluetoothMock-macOS/CoreBluetoothMock.framework",
 				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-DFU-Mocks-UI-macOS/MetaWear.framework",
 				"${BUILT_PRODUCTS_DIR}/ZIPFoundation-macOS/ZIPFoundation.framework",
 				"${BUILT_PRODUCTS_DIR}/iOSDFULibrary-macOS/iOSDFULibrary.framework",
@@ -1149,6 +1152,7 @@
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BoltsSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CoreBluetoothMock.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MetaWear.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZIPFoundation.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/iOSDFULibrary.framework",
@@ -1166,6 +1170,7 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-iOS-MetaWearIntegrationTestHost-iOS/Pods-MetaWear-MetaWear-iOS-MetaWearIntegrationTestHost-iOS-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Bolts-Swift-iOS/BoltsSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/CoreBluetoothMock-iOS/CoreBluetoothMock.framework",
 				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-DFU-Mocks-UI-iOS/MetaWear.framework",
 				"${BUILT_PRODUCTS_DIR}/ZIPFoundation-iOS/ZIPFoundation.framework",
 				"${BUILT_PRODUCTS_DIR}/iOSDFULibrary-iOS/iOSDFULibrary.framework",
@@ -1173,6 +1178,7 @@
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BoltsSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CoreBluetoothMock.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MetaWear.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZIPFoundation.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/iOSDFULibrary.framework",
@@ -1208,11 +1214,13 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-tvOS-MetaWearIntegrationTestHost-tvOS/Pods-MetaWear-MetaWear-tvOS-MetaWearIntegrationTestHost-tvOS-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Bolts-Swift-tvOS/BoltsSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/CoreBluetoothMock-tvOS/CoreBluetoothMock.framework",
 				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-UI-tvOS/MetaWear.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BoltsSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CoreBluetoothMock.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MetaWear.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1282,6 +1290,7 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Bolts-Swift-iOS/BoltsSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/CoreBluetoothMock-iOS/CoreBluetoothMock.framework",
 				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-DFU-Mocks-UI-iOS/MetaWear.framework",
 				"${BUILT_PRODUCTS_DIR}/ZIPFoundation-iOS/ZIPFoundation.framework",
 				"${BUILT_PRODUCTS_DIR}/iOSDFULibrary-iOS/iOSDFULibrary.framework",
@@ -1289,6 +1298,7 @@
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BoltsSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CoreBluetoothMock.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MetaWear.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZIPFoundation.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/iOSDFULibrary.framework",
@@ -1324,11 +1334,13 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-watchOS-MetaWearIntegrationTestHost-watchOS Extension/Pods-MetaWear-MetaWear-watchOS-MetaWearIntegrationTestHost-watchOS Extension-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Bolts-Swift-watchOS/BoltsSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/CoreBluetoothMock-watchOS/CoreBluetoothMock.framework",
 				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-UI-watchOS/MetaWear.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BoltsSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CoreBluetoothMock.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MetaWear.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1380,11 +1392,13 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-tvOS-MetaWearUnitTests-tvOS/Pods-MetaWear-MetaWear-tvOS-MetaWearUnitTests-tvOS-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Bolts-Swift-tvOS/BoltsSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/CoreBluetoothMock-tvOS/CoreBluetoothMock.framework",
 				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-UI-tvOS/MetaWear.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BoltsSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CoreBluetoothMock.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MetaWear.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1581,7 +1595,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				IBSC_MODULE = MetaWearIntegrationTestHost_watchOS_Extension;
 				INFOPLIST_FILE = "Tests/MetaWearIntegrationTestHost-watchOS/Info.plist";
@@ -1611,7 +1625,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				IBSC_MODULE = MetaWearIntegrationTestHost_watchOS_Extension;
 				INFOPLIST_FILE = "Tests/MetaWearIntegrationTestHost-watchOS/Info.plist";
@@ -1640,7 +1654,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Tests/MetaWearIntegrationTestHost-watchOS Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -1671,7 +1685,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Tests/MetaWearIntegrationTestHost-watchOS Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -1695,8 +1709,9 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"COCOAPODS=1",
@@ -1722,9 +1737,10 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"COCOAPODS=1",
@@ -1752,7 +1768,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"COCOAPODS=1",
@@ -1782,7 +1798,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"COCOAPODS=1",
@@ -1808,7 +1824,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/MetaWearIntegrationTestHost-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -1830,7 +1846,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/MetaWearIntegrationTestHost-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1852,7 +1868,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/Resources/MetaWearIntegrationTests-iOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -1877,7 +1893,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/Resources/MetaWearIntegrationTests-iOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1899,7 +1915,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/Resources/MetaWearUnitTests-tvOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -1923,7 +1939,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/Resources/MetaWearUnitTests-tvOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1946,7 +1962,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/MetaWearIntegrationTestHost-tvOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -1970,7 +1986,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/MetaWearIntegrationTestHost-tvOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1993,7 +2009,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/Resources/MetaWearIntegrationTests-tvOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -2020,7 +2036,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/Resources/MetaWearIntegrationTests-tvOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -2046,7 +2062,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/MetaWearIntegrationTestHost-macOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 11.3;
@@ -2071,7 +2087,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/MetaWearIntegrationTestHost-macOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 11.3;
@@ -2095,7 +2111,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/Resources/MetaWearIntegrationTests-macOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -2121,7 +2137,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S2273LZ6GL;
+				DEVELOPMENT_TEAM = FVC2SFVFYG;
 				INFOPLIST_FILE = "Tests/Resources/MetaWearIntegrationTests-macOS-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -2183,7 +2199,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
-				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -2235,7 +2251,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
-				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_VERSION = 5.0;

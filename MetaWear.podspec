@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
 
   s.platform = :ios, :osx, :tvos, :watchos
   s.ios.deployment_target = '14.5'
-  s.osx.deployment_target = '11.3'
+  s.osx.deployment_target = '11.5'
   s.tvos.deployment_target = '14.5'
   s.watchos.deployment_target = '7.4'
 
@@ -46,6 +46,7 @@ Pod::Spec.new do |s|
     }
     s.frameworks = 'CoreBluetooth'
     s.dependency 'Bolts-Swift', '~> 1'
+    s.dependency 'CoreBluetoothMock', '~> 0'
   end
 
   s.subspec 'AsyncUtils' do |s|
@@ -61,7 +62,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'Mocks' do |s|
     s.ios.deployment_target = '14.5'
-    s.osx.deployment_target = '11.3'
+    s.osx.deployment_target = '11.5'
       
     s.source_files = 'MetaWear/Mocks/**/*'
     s.dependency 'MetaWear/Core'
@@ -69,10 +70,11 @@ Pod::Spec.new do |s|
   
   s.subspec 'DFU' do |s|
       s.ios.deployment_target = '14.5'
-      s.osx.deployment_target = '11.3'
+      s.osx.deployment_target = '11.5'
 
       s.source_files = 'MetaWear/DFU/**/*'
       s.dependency 'MetaWear/Core'
       s.dependency 'iOSDFULibrary', '4.11.0'
+      s.dependency 'CoreBluetoothMock', '~> 0'
   end
 end

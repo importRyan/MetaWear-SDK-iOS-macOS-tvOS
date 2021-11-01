@@ -33,8 +33,6 @@
  * contact MbientLab via email: hello@mbientlab.com
  */
 
-import CoreBluetooth
-
 /// Bluetooth ID's used by MetaWear
 extension CBUUID {
     public static let metaWearService = CBUUID(string: "326A9000-85CB-9195-D9DD-464CFBBAE75A")

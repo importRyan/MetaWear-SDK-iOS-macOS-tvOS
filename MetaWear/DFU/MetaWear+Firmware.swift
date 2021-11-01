@@ -33,7 +33,7 @@
  * contact MbientLab via email: hello@mbientlab.com
  */
 
-import CoreBluetooth
+import CoreBluetoothMock
 import MetaWearCpp
 import BoltsSwift
 import iOSDFULibrary
@@ -109,7 +109,7 @@ func runNordicInstall(metaboot: MetaWear, firmware: DFUFirmware, delegate: DFUPr
     initiatorCache[metaboot] = initiator
     let dfuSource = TaskCompletionSource<Void>()
     dfuSourceCache[metaboot] = dfuSource
-    dfuControllerCache[metaboot] = initiator.start(target: metaboot.peripheral)
+    dfuControllerCache[metaboot] = initiator.start(targetWithIdentifier: metaboot.peripheral.identifier)
     return dfuSource.task
 }
 

@@ -5,6 +5,7 @@ abstract_target 'MetaWear' do
         platform :ios, '14.5'
         ## LOCAL
 	pod 'MetaWear', :subspecs => ['UI', 'AsyncUtils', 'Mocks', 'DFU'], :path => '../'
+ 	pod 'CoreBluetoothMock'
         
         target 'MetaWearIntegrationTestHost-iOS' do
             target 'MetaWearIntegrationTests-iOS' do
@@ -17,9 +18,10 @@ abstract_target 'MetaWear' do
     end
     
     abstract_target 'MetaWear-macOS' do
-        platform :osx, '11.3'
+        platform :osx, '11.5'
         ## LOCAL
 	pod 'MetaWear', :subspecs => ['UI', 'AsyncUtils', 'Mocks', 'DFU'], :path => '../'
+	pod 'CoreBluetoothMock'
         
         target 'MetaWearIntegrationTestHost-macOS' do
             target 'MetaWearIntegrationTests-macOS' do
@@ -35,6 +37,7 @@ abstract_target 'MetaWear' do
         platform :tvos, '14.5'
         ## LOCAL
         pod 'MetaWear', :subspecs => ['UI', 'AsyncUtils'], :path => '../'
+        pod 'CoreBluetoothMock'
 
         target 'MetaWearIntegrationTestHost-tvOS' do
             target 'MetaWearIntegrationTests-tvOS' do
@@ -51,7 +54,8 @@ abstract_target 'MetaWear' do
         platform :watchos, '7.4'
         ## LOCAL
         pod 'MetaWear', :subspecs => ['UI', 'AsyncUtils'], :path => '../'
-        
+        pod 'CoreBluetoothMock'        
+
         target 'MetaWearIntegrationTestHost-watchOS Extension' do
         end
     end

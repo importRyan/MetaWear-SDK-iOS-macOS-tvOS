@@ -33,9 +33,7 @@
  * contact MbientLab via email: hello@mbientlab.com
  */
 
-import CoreBluetooth
 import BoltsSwift
-
 
 fileprivate let rememberedDevicesKey = "com.mbientlab.rememberedDevices"
 fileprivate var scannerCount = 0
@@ -43,24 +41,37 @@ fileprivate var scannerCount = 0
 /// Scanner utility, make is simple to start scanning for MetaWear devices without
 /// having to understand all of CoreBluetooth
 public class MetaWearScanner: NSObject {
-    public static let shared = MetaWearScanner()
-    public static let sharedRestore = MetaWearScanner(restoreIdentifier: "MetaWearScanner.shared")
+
+    /// Set prior to accessing the singleton MetaWearScanners to enable use on the iOS simulator.
+    public static var sharedShouldMock = false
+    public static let shared = MetaWearScanner(forceMock: sharedShouldMock)
+    public static let sharedRestore = MetaWearScanner(restoreIdentifier: "MetaWearScanner.shared", forceMock: sharedShouldMock)
+    public var isMock: Bool
+
     public var central: CBCentralManager! = nil
+
     /// All devices that have been discovered in one way or another by this central
-    public var deviceMap: [CBPeripheral: MetaWear] = [:]
+    public var deviceMap: [UUID: MetaWear] = [:]
     public var didUpdateState: ((CBCentralManager) -> Void)? {
-        didSet {
-            didUpdateState?(central)
-        }
+        didSet { didUpdateState?(central) }
     }
+
+    public let bleQueue: DispatchQueue = {
+        let queue = DispatchQueue(label: "com.mbientlab.bleQueue\(scannerCount)")
+        scannerCount += 1
+        queue.setSpecific(key: bleQueueKey, value: bleQueueValue)
+        return queue
+    }()
     
-    public init(restoreIdentifier: String? = nil) {
+    public init(restoreIdentifier: String? = nil, forceMock: Bool) {
+        self.isMock = forceMock
+        MetaWearScanner.sharedShouldMock = forceMock
         super.init()
         let options: [String : Any] = restoreIdentifier == nil ? [:] : [CBCentralManagerOptionRestoreIdentifierKey: restoreIdentifier!]
-        self.central = CBCentralManager(delegate: self,
-                                        queue: bleQueue,
-                                        options: options)
+        self.central = CBCentralManagerFactory.instance(delegate: self, queue: bleQueue, options: options, forceMock: forceMock)
     }
+
+    // MARK: - Public Methods
     
     /// Start the scaning process for MetaWear or MetaBoot devices
     public func startScan(allowDuplicates: Bool, callback: @escaping (MetaWear) -> Void) {
@@ -95,8 +106,8 @@ public class MetaWearScanner: NSObject {
                 let uuids = ids.map { UUID(uuidString: $0)! }
                 let peripherals = self.central.retrievePeripherals(withIdentifiers: uuids)
                 devices = peripherals.map { peripheral -> MetaWear in
-                    let device = self.deviceMap[peripheral] ?? MetaWear(peripheral: peripheral, scanner: self)
-                    self.deviceMap[peripheral] = device
+                    let device = self.deviceMap[peripheral.identifier] ?? MetaWear(peripheral: peripheral, scanner: self)
+                    self.deviceMap[peripheral.identifier] = device
                     return device
                 }
             }
@@ -114,14 +125,16 @@ public class MetaWearScanner: NSObject {
             let peripherals = self.central.retrieveConnectedPeripherals(withServices: [.metaWearService,
                                                                                        .metaWearDfuService])
             devices = peripherals.map { peripheral -> MetaWear in
-                let device = self.deviceMap[peripheral] ?? MetaWear(peripheral: peripheral, scanner: self)
-                self.deviceMap[peripheral] = device
+                let device = self.deviceMap[peripheral.identifier] ?? MetaWear(peripheral: peripheral, scanner: self)
+                self.deviceMap[peripheral.identifier] = device
                 return device
             }
             source.trySet(result: devices)
         }
         return source.task
     }
+
+    // MARK: - Internals
     
     // Internal details below
     var allowDuplicates: Bool = false
@@ -130,12 +143,6 @@ public class MetaWearScanner: NSObject {
     var centralStateUpdateSources: [TaskCompletionSource<()>] = []
     var runOnPowerOn: [() -> Void] = []
     var runOnPowerOff: [() -> Void] = []
-    public let bleQueue: DispatchQueue = {
-        let queue = DispatchQueue(label: "com.mbientlab.bleQueue\(scannerCount)")
-        scannerCount += 1
-        queue.setSpecific(key: bleQueueKey, value: bleQueueValue)
-        return queue
-    }()
     
     func connect(_ device: MetaWear) {
         runWhenPoweredOn {
@@ -238,22 +245,22 @@ extension MetaWearScanner: CBCentralManagerDelegate {
         centralStateUpdateSources = centralStateUpdateSources.filter { !$0.task.completed }
     }
     public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        let device = deviceMap[peripheral] ?? MetaWear(peripheral: peripheral, scanner: self)
-        deviceMap[peripheral] = device
+        let device = deviceMap[peripheral.identifier] ?? MetaWear(peripheral: peripheral, scanner: self)
+        deviceMap[peripheral.identifier] = device
         device.didDiscover(advertisementData: advertisementData, rssi: RSSI)
         callback?(device)
     }
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        deviceMap[peripheral]?.didConnect()
+        deviceMap[peripheral.identifier]?.didConnect()
     }
     public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        deviceMap[peripheral]?.didFailToConnect(error: error)
+        deviceMap[peripheral.identifier]?.didFailToConnect(error: error)
     }
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        deviceMap[peripheral]?.didDisconnectPeripheral(error: error)
+        deviceMap[peripheral.identifier]?.didDisconnectPeripheral(error: error)
     }
     public func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-        // As an SDK, we arn't sure what operations the user is acutally doing.
+        // As an SDK, we aren't sure what operations the user is actually doing.
         // You should place code in didFinishLaunchingWithOptions to kick off any tasks
         // you expect to take place
         
@@ -263,7 +270,7 @@ extension MetaWearScanner: CBCentralManagerDelegate {
         if let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
             for peripheral in peripherals {
                 let device = MetaWear(peripheral: peripheral, scanner: self)
-                self.deviceMap[peripheral] = device
+                self.deviceMap[peripheral.identifier] = device
             }
         }
     }
