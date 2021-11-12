@@ -35,7 +35,6 @@
 
 import CoreBluetooth
 import MetaWearCpp
-import BoltsSwift
 import iOSDFULibrary
 import Combine
 

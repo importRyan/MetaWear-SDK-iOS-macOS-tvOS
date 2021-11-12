@@ -45,7 +45,6 @@ Pod::Spec.new do |s|
       'SWIFT_INCLUDE_PATHS' => '$(PODS_TARGET_SRCROOT)/MetaWear/MetaWear-SDK-Cpp/src'
     }
     s.frameworks = 'CoreBluetooth'
-    s.dependency 'Bolts-Swift', '~> 1'
   end
 
   s.subspec 'AsyncUtils' do |s|

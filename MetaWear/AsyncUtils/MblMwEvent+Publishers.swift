@@ -34,7 +34,6 @@
  */
 
 import MetaWearCpp
-import BoltsSwift
 import Combine
 
 extension OpaquePointer {

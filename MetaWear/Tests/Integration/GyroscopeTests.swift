@@ -8,7 +8,6 @@
 
 import Foundation
 import XCTest
-import BoltsSwift
 @testable import MetaWear
 @testable import MetaWearCpp
 
