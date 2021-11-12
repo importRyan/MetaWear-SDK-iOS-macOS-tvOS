@@ -34,10 +34,11 @@
  */
 
 import CoreBluetooth
-import BoltsSwift
 import iOSDFULibrary
+import Combine
 
 /// Describes location of a firmware file
+///
 public struct FirmwareBuild {
     public let hardwareRev: String
     public let modelNumber: String
@@ -45,9 +46,9 @@ public struct FirmwareBuild {
     public let firmwareRev: String
     public let filename: String
     public let requiredBootloader: String?
-    
+
     public let firmwareURL: URL
-    
+
     public init(hardwareRev: String,
                 modelNumber: String,
                 buildFlavor: String,
@@ -60,10 +61,10 @@ public struct FirmwareBuild {
         self.firmwareRev = firmwareRev
         self.filename = filename
         self.requiredBootloader = requiredBootloader
-        
+
         self.firmwareURL = URL(string: "https://mbientlab.com/releases/metawear/\(hardwareRev)/\(modelNumber)/\(buildFlavor)/\(firmwareRev)/\(filename)")!
     }
-    
+
     public init(hardwareRev: String,
                 modelNumber: String,
                 firmwareRev: String,
@@ -80,20 +81,30 @@ public struct FirmwareBuild {
 
         self.firmwareURL = customUrl
     }
-    
-    func getNordicFirmware() -> Task<DFUFirmware> {
-        let task = firmwareURL.isFileURL ? Task<URL>(firmwareURL) : firmwareURL.downloadAsync()
-        return task.continueOnSuccessWithTask { fileUrl in
-            var selectedFirmware: DFUFirmware?
-            if fileUrl.pathExtension.caseInsensitiveCompare("zip") == .orderedSame {
-                selectedFirmware = DFUFirmware(urlToZipFile: fileUrl)
-            } else {
-                selectedFirmware = DFUFirmware(urlToBinOrHexFile: fileUrl, urlToDatFile: nil, type: .application)
+}
+
+internal extension FirmwareBuild {
+
+    func getNordicFirmware() -> AnyPublisher<DFUFirmware,Error> {
+        let task = firmwareURL.isFileURL
+        ? Just(firmwareURL).setFailureType(to: Error.self).eraseToAnyPublisher()
+        : MetaWearFirmwareServer.downloadAsync(url: firmwareURL)
+
+        return task
+            .tryMap { fileUrl -> DFUFirmware in
+                var selectedFirmware: DFUFirmware?
+
+                if fileUrl.pathExtension.caseInsensitiveCompare("zip") == .orderedSame {
+                    selectedFirmware = DFUFirmware(urlToZipFile: fileUrl)
+                } else {
+                    selectedFirmware = DFUFirmware(urlToBinOrHexFile: fileUrl, urlToDatFile: nil, type: .application)
+                }
+
+                guard let firmware = selectedFirmware else {
+                    throw MetaWearError.operationFailed("invalid dfu file chosen '\(fileUrl.lastPathComponent)'")
+                }
+                return firmware
             }
-            guard let firmware = selectedFirmware else {
-                return Task<DFUFirmware>(error: MetaWearError.operationFailed(message: "invalid dfu file chosen '\(fileUrl.lastPathComponent)'"))
-            }
-            return Task<DFUFirmware>(firmware)
-        }
+            .eraseToAnyPublisher()
     }
 }

@@ -1,3 +1,4 @@
+import CoreBluetooth
 /**
  * LogDelegate.swift
  * MetaWear-Swift
@@ -69,5 +70,21 @@ public struct ConsoleLogger: LogDelegate {
             return
         }
         print("\(level) \(message)")
+    }
+}
+
+internal extension LogDelegate {
+
+    func _didUpdateValueFor(characteristic: CBCharacteristic, error: Error?) {
+        if let error = error {
+            logWith(.error, message: "didUpdateValueForCharacteristic \(error)")
+            return
+        }
+
+        let logMessage = characteristic.uuid == .metaWearNotification
+        ? "Received: \(characteristic.value?.hexEncodedString() ?? "N/A")"
+        : "didUpdateValueForCharacteristic \(characteristic)"
+
+        logWith(.info, message: logMessage)
     }
 }

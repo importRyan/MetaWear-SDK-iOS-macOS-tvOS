@@ -36,17 +36,67 @@
 import CoreBluetooth
 
 /// Bluetooth ID's used by MetaWear
-extension CBUUID {
-    public static let metaWearService = CBUUID(string: "326A9000-85CB-9195-D9DD-464CFBBAE75A")
-    public static let metaWearCommand = CBUUID(string: "326A9001-85CB-9195-D9DD-464CFBBAE75A")
-    public static let metaWearNotification = CBUUID(string: "326A9006-85CB-9195-D9DD-464CFBBAE75A")
-    public static let metaWearDfuService = CBUUID(string: "00001530-1212-EFDE-1523-785FEABCD123")
-    public static let batteryService = CBUUID(string: "180F")
-    public static let batteryLife = CBUUID(string: "2A19")
-    public static let disService = CBUUID(string: "180A")
-    public static let disModelNumber = CBUUID(string: "2A24")
-    public static let disSerialNumber = CBUUID(string: "2A25")
-    public static let disFirmwareRev = CBUUID(string: "2A26")
-    public static let disHardwareRev = CBUUID(string: "2A27")
-    public static let disManufacturerName = CBUUID(string: "2A29")
+public extension CBUUID {
+    static let metaWearService       = CBUUID(string: "326A9000-85CB-9195-D9DD-464CFBBAE75A")
+    static let metaWearCommand       = CBUUID(string: "326A9001-85CB-9195-D9DD-464CFBBAE75A")
+    static let metaWearNotification  = CBUUID(string: "326A9006-85CB-9195-D9DD-464CFBBAE75A")
+    static let metaWearDfuService    = CBUUID(string: "00001530-1212-EFDE-1523-785FEABCD123")
+    static let batteryService        = CBUUID(string: "180F")
+    static let batteryLife           = CBUUID(string: "2A19")
+    static let disService            = CBUUID(string: "180A")
+    static let disModelNumber        = CBUUID(string: "2A24")
+    static let disSerialNumber       = CBUUID(string: "2A25")
+    static let disFirmwareRev        = CBUUID(string: "2A26")
+    static let disHardwareRev        = CBUUID(string: "2A27")
+    static let disManufacturerName   = CBUUID(string: "2A29")
+}
+
+public extension MetaWear {
+
+    static let Notification = CBUUID(string: "326A9006-85CB-9195-D9DD-464CFBBAE75A")
+    static let Command      = CBUUID(string: "326A9001-85CB-9195-D9DD-464CFBBAE75A")
+
+    enum Service {
+        case metaWear
+        case dfu
+        case battery
+        case dis
+
+        public var cbuuid: CBUUID {
+            switch self {
+                case .metaWear: return CBUUID(string: "326A9000-85CB-9195-D9DD-464CFBBAE75A")
+                case .dfu:      return CBUUID(string: "00001530-1212-EFDE-1523-785FEABCD123")
+                case .battery:  return CBUUID(string: "180F")
+                case .dis:      return CBUUID(string: "180A")
+            }
+        }
+    }
+
+    enum Characteristic {
+        case manufacturerName
+        case hardwareRevision
+        case firmwareRevision
+        case serialNumber
+        case batteryLife
+
+        public var cbuuid: CBUUID {
+            switch self {
+                case .manufacturerName: return CBUUID(string: "2A29")
+                case .hardwareRevision: return CBUUID(string: "2A27")
+                case .firmwareRevision: return CBUUID(string: "2A26")
+                case .serialNumber:     return CBUUID(string: "2A25")
+                case .batteryLife:      return CBUUID(string: "2A19")
+            }
+        }
+
+        public var service: Service {
+            switch self {
+                case .manufacturerName: return .dis
+                case .hardwareRevision: return .dis
+                case .firmwareRevision: return .dis
+                case .serialNumber:     return .dis
+                case .batteryLife:      return .battery
+            }
+        }
+    }
 }

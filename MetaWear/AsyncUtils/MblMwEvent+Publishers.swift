@@ -35,19 +35,27 @@
 
 import MetaWearCpp
 import BoltsSwift
+import Combine
 
 extension OpaquePointer {
-    /// Tasky interface to mbl_mw_event_end_record
-    public func eventEndRecord() -> Task<()> {
-        let source = TaskCompletionSource<()>()
-        mbl_mw_event_end_record(self, bridgeRetained(obj: source)) { (context, event, status) in
-            let source: TaskCompletionSource<()> = bridgeTransfer(ptr: context!)
-            if status == 0 {
-                source.trySet(result: ())
-            } else {
-                source.trySet(error: MetaWearError.operationFailed(message: "event end record failed: \(status)"))
+
+    /// When pointing to a board, ends recording of an `MblMwEvent`. Combine wrapper for `mbl_mw_event_end_record`.
+    ///
+    public func eventEndRecording() -> PassthroughSubject<Void,MetaWearError> {
+
+        let subject = PassthroughSubject<Void,MetaWearError>()
+
+        mbl_mw_event_end_record(self, bridgeRetained(obj: subject)) { (context, event, status) in
+            let _subject: PassthroughSubject<Void,MetaWearError> = bridgeTransfer(ptr: context!)
+
+            guard status == 0 else {
+                _subject.send(completion: .failure(.operationFailed("Event end record failed: \(status)")))
+                return
             }
+            _subject.send()
+            _subject.send(completion: .finished)
         }
-        return source.task
+
+        return subject
     }
 }

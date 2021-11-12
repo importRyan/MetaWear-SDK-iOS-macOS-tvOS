@@ -35,6 +35,7 @@
 
 import CoreBluetooth
 import MetaWearCpp
+import Combine
 
 /// Callbacks from ScannerModel
 public protocol ScannerModelDelegate: AnyObject {
@@ -51,127 +52,146 @@ public class ScannerModel {
     
     let scanner: MetaWearScanner
     let adTimeout: Double
-    let isIncluded: (MetaWear) -> Bool
     var connectingItem: ScannerModelItem?
+    var connectionAttempts = Set<AnyCancellable>()
+    var discoveriesSub: AnyCancellable? = nil
     
     public init(delegate: ScannerModelDelegate,
                 scanner: MetaWearScanner =  MetaWearScanner.shared,
-                adTimeout: Double = 5.0,
-                isIncluded: @escaping (MetaWear) -> Bool = { _ in return true }) {
+                adTimeout: Double = 5.0) {
         self.delegate = delegate
         self.scanner = scanner
         self.adTimeout = adTimeout
-        self.isIncluded = isIncluded
     }
-    
-    public var isScanning = false {
-        didSet {
-            guard oldValue != isScanning else {
-                return
-            }
-            guard isScanning else {
-                scanner.stopScan()
-                items.forEach { $0.watchdogStop() }
-                return
-            }
-            scanner.startScan(allowDuplicates: true) { [weak self] device in
-                guard let _self = self else {
-                    return
-                }
-                guard _self.isIncluded(device) else {
-                    return
-                }
-                DispatchQueue.main.async {
-                    if let item = _self.items.first(where: { $0.device == device }) {
-                        item.watchdogReset()
-                        item.stateDidChange?()
-                    } else {
-                        _self.items.append(ScannerModelItem(device, _self))
-                        _self.delegate?.scannerModel(_self, didAddItemAt: _self.items.count - 1)
-                    }
+
+    func startScanning() {
+        scanner.startScan(allowDuplicates: true)
+        discoveriesSub = scanner.didDiscover
+            .receive(on: DispatchQueue.main, options: nil)
+            .sink { device in
+                if let item = self.items.first(where: { $0.device == device }) {
+                    item.shareChangeAndResetWatchdog()
+                } else {
+                    self.items.append(ScannerModelItem(device, self))
+                    self.delegate?.scannerModel(self, didAddItemAt: self.items.count - 1)
                 }
             }
-        }
     }
-    
-    func didToggle(_ item: ScannerModelItem) {
-        guard item.isConnecting else {
-            item.device.cancelConnection()
-            return
-        }
-        connectingItem = item
-        items.forEach { $0.stateDidChange?() }
-        
-        item.device.connectAndSetup().continueWith { t in
-            let resetState = {
-                self.connectingItem = nil
-                item.isConnecting = false
-                self.items.forEach { $0.stateDidChange?() }
+
+    func stopScanning() {
+        scanner.stopScan()
+        items.forEach { $0.cancelWatchdog() }
+    }
+
+    func connect(to item: ScannerModelItem) {
+        item.device.connectPublisher()
+            .receive(on: DispatchQueue.main)
+            .handleEvents(receiveOutput: { [weak item] _ in
+                item?.shareChangeAndResetWatchdog()       // The MAC address might be unknown
+            })
+            .flatMap { [weak self, weak item] metaWear in
+                self?._flashLEDForConfirmation(item: item).eraseToAnyPublisher() ?? _JustMW(false)
             }
-            guard !t.cancelled && !t.faulted else {
-                resetState()
-                if let error = t.error {
-                    DispatchQueue.main.async {
+            .sink { [weak self, weak item] didComplete in
+                self?._resetState(for: item)
+
+                switch didComplete {
+                    case .finished: return // A requested disconnect was performed. Nothing to do.
+                    case .failure(let error): // Some fault occurred
+                        guard let self = self else { return }
                         self.delegate?.scannerModel(self, errorDidOccur: error)
-                    }
                 }
-                return
+
+            } receiveValue: { [weak self, weak item] didConfirmBlinkingItem in
+                self?._resetState(for: item)
+                self?._stopLEDFlashing(for: item?.device, didAcceptItem: didConfirmBlinkingItem)
             }
-            // The connection could have synd an unknown MAC address
-            item.stateDidChange?()
+            .store(in: &connectionAttempts)
+    }
+
+    private func _resetState(for item: ScannerModelItem?) {
+        connectingItem = nil
+        item?.isConnecting = false
+        items.forEach { $0.shareChangeAndResetWatchdog() }
+    }
+
+    private func _flashLEDForConfirmation(item: ScannerModelItem?) -> AnyPublisher<Bool,MetaWearError> {
+        Future { [weak self, weak item] promise in
+            guard let self = self, let item = item else { return }
+
             item.device.flashLED(color: .green, intensity: 1.0, _repeat: 60)
-            DispatchQueue.main.async {
-                self.delegate?.scannerModel(self, confirmBlinkingItem: item) { (confirmed) in
-                    resetState()
-                    item.device.turnOffLed()
-                    if !confirmed {
-                        mbl_mw_debug_disconnect(item.device.board)
-                    }
-                }
+            self.delegate?.scannerModel(self, confirmBlinkingItem: item) { (confirmed) in
+                promise(.success(confirmed))
             }
         }
+        .eraseToAnyPublisher()
+    }
+
+    private func _stopLEDFlashing(for device: MetaWear?, didAcceptItem: Bool) {
+        device?.turnOffLed()
+        guard let device = device, didAcceptItem == false else { return }
+        mbl_mw_debug_disconnect(device.board)
     }
 }
 
 
+
+/// Simple wrapper around a MetaWear to coordinate state updates for UI in a connection screen.
 public class ScannerModelItem {
+
     public let device: MetaWear
     public internal(set) var isConnecting = false
-    weak var parent: ScannerModel?
-    var adWatchdog: Timer?
-    /// See if the connect button should be enabled 
-    public var connectButtonEnabled: Bool {
-        let someoneConnecting = parent?.connectingItem != nil
-        return !someoneConnecting || isConnecting
-    }
+    public weak var parent: ScannerModel?
+
     /// Listen for changes that would require changes to the UI
-    public var stateDidChange: (() -> Void)? {
-        didSet {
-            stateDidChange?()
-        }
-    }
+    public private(set) lazy var stateDidChange = stateDidChangeSubject.share().eraseToAnyPublisher()
+    private lazy var stateDidChangeSubject = CurrentValueSubject<ScannerModelItem,Never>(self)
+    private var adWatchdog: Timer?
     
     init(_ device: MetaWear, _ parent: ScannerModel?) {
         self.device = device
         self.parent = parent
-        watchdogReset()
+        // Schedule updates
+        shareChangeAndResetWatchdog()
     }
-    
-    /// The UI can expose a 'Connect' button for each device, which in turn should call this
-    public func toggleConnect() {
-        isConnecting = !isConnecting
-        parent?.didToggle(self)
+}
+
+public extension ScannerModelItem {
+
+    func connect() {
+        isConnecting = true
+        parent?.connect(to: self)
+        stateDidChangeSubject.send(self)
     }
 
-    func watchdogReset() {
+    func cancelConnecting() {
+        isConnecting = false
+        device.cancelConnection()
+        stateDidChangeSubject.send(self)
+    }
+
+    func toggleConnect() {
+        if isConnecting { cancelConnecting() }
+        else { connect() }
+    }
+}
+
+internal extension ScannerModelItem {
+
+    func shareChangeAndResetWatchdog() {
         DispatchQueue.main.async {
+            self.stateDidChangeSubject.send(self)
             self.adWatchdog?.invalidate()
-            self.adWatchdog = Timer.scheduledTimer(withTimeInterval: (self.parent?.adTimeout ?? 5.0) + 0.1, repeats: false) { [weak self] t in
-                self?.stateDidChange?()
+            self.adWatchdog = Timer.scheduledTimer(
+                withTimeInterval: (self.parent?.adTimeout ?? 5.0) + 0.1,
+                repeats: false) { [weak self] t in
+                    guard let self = self else { return }
+                    self.stateDidChangeSubject.send(self)
             }
         }
     }
-    func watchdogStop() {
+
+    func cancelWatchdog() {
         DispatchQueue.main.async {
             self.adWatchdog?.invalidate()
             self.adWatchdog = nil

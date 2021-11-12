@@ -44,9 +44,15 @@ public typealias MBLColor = UIColor
 #endif
 
 extension MetaWear {
+
     /// Simplify common LED operations with a straightforward interface
     /// Use mbl_mw_led_write_pattern for precise control
-    public func flashLED(color: MBLColor, intensity: CGFloat, _repeat: UInt8 = 0xFF, onTime: UInt16 = 200, period: UInt16 = 800) {
+    public func flashLED(color: MBLColor,
+                         intensity: CGFloat,
+                         _repeat: UInt8 = 0xFF,
+                         onTime: UInt16 = 200,
+                         period: UInt16 = 800) {
+
         assert(intensity >= 0.0 && intensity <= 1.0, "intensity valid range is [0, 1.0]")
         guard mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_LED) != MODULE_TYPE_NA else {
             return
@@ -90,9 +96,7 @@ extension MetaWear {
 
     /// Wrapper around mbl_mw_led_stop_and_clear
     public func turnOffLed() {
-        guard mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_LED) != MODULE_TYPE_NA else {
-            return
-        }
+        guard mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_LED) != MODULE_TYPE_NA else { return }
         mbl_mw_led_stop_and_clear(board)
     }
 }
