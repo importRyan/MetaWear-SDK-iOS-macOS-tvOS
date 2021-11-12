@@ -36,179 +36,136 @@
 import XCTest
 @testable import MetaWear
 @testable import MetaWearCpp
+import Combine
+import CoreBluetooth
 
-class ManualTests: XCTestCase {
-    var device: MetaWear!
+class ManualTests: XCTestCase, MetaWearTestCase {
+
+    var device: MetaWear?
     var counter: OpaquePointer!
     var comparator: OpaquePointer!
     var id: Int!
-    
-    func connectNearest() -> Task<MetaWear> {
-        let source = TaskCompletionSource<MetaWear>()
-        MetaWearScanner.shared.startScan(allowDuplicates: true) { (device) in
-            if let rssi = device.averageRSSI(), rssi > -50 {
-                MetaWearScanner.shared.stopScan()
-                device.logDelegate = ConsoleLogger.shared
-                device.connectAndSetup().continueWith { t -> () in
-                    if let error = t.error {
-                        source.trySet(error: error)
-                    } else {
-                        source.trySet(result: device)
-                    }
-                }
-            }
-        }
-        return source.task
+
+    // MARK: - Setup/Teardown - Discover, Connect, Disconnect
+
+    var discovery: AnyCancellable? = nil
+    var disconnectExpectation: XCTestExpectation?
+
+    override func setUp() {
+        super.setUp()
+        connectToAnyNearbyMetaWear()
     }
-    
-    func testCancelPendingConnection() {
-        let connectExpectation = XCTestExpectation(description: "connecting")
-        MetaWearScanner.shared.retrieveSavedMetaWearsAsync().continueOnSuccessWith { array in
-            array.first
-        }
-        MetaWearScanner.shared.startScan(allowDuplicates: true) { (device) in
-            if device.rssi > -50 {
-                MetaWearScanner.shared.stopScan()
-                print("Remove battery from device...")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
-                    print("Connecting...")
-                    device.connectAndSetup().continueWith { t in
-                        t.result?.continueWith { t in
-                        }
-                        XCTAssertTrue(t.cancelled)
-                        connectExpectation.fulfill()
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        print("Cancel Connection...")
-                        device.cancelConnection()
-                    }
-                }
-            }
-        }
-        wait(for: [connectExpectation], timeout: 60)
+
+    override func tearDown() {
+        super.tearDown()
+        XCTAssertNoThrow(try expectDisconnection())
     }
-    
-    func testJumpToBootloader() {
-        let connectExpectation = XCTestExpectation(description: "connecting")
-        connectNearest().continueWith { t in
-            guard let device = t.result else {
-                return
-            }
-            mbl_mw_debug_jump_to_bootloader(device.board)
-            connectExpectation.fulfill()
-        }
-        wait(for: [connectExpectation], timeout: 60)
+
+    func testConnection() throws {
+        XCTAssertTrue(device?.isConnectedAndSetup == true)
+        try prepareDeviceForTesting()
     }
-    
-    func testConnection() {
-        let connectExpectation = XCTestExpectation(description: "connecting")
-        connectNearest().continueWith { t in
-            guard let device = t.result else {
-                return
-            }
-            print(device.info!.firmwareRevision)
-            print(device.info!.hardwareRevision)
-            print(device.info!.manufacturer)
-            print(device.info!.modelNumber)
-            print(device.info!.serialNumber)
-            device.clearAndReset()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
-                print("fulfill")
-                connectExpectation.fulfill()
-            }
-        }
-        wait(for: [connectExpectation], timeout: 60)
+
+    // MARK: - Tests
+
+#warning("There were no assertions in the test.")
+    func testJumpToBootloader() throws {
+        let device = try XCTUnwrap(device)
+        mbl_mw_debug_jump_to_bootloader(device.board)
     }
-    
-    func testUserMacroBoltsSwift() {
-        let connectExpectation = XCTestExpectation(description: "connecting")
-        connectNearest().continueWith { t in
-            guard let device = t.result else {
-                return
-            }
+
+    func testUserMacro() throws {
+        try wait(forVisualInspection: 60) { device, exp in
+            exp.isInverted = false
+
             print("macro")
             mbl_mw_macro_record(device.board, 1)
             let switcher = mbl_mw_switch_get_state_data_signal(device.board)
             print("switch: ", switcher as Any)
-            switcher?.accounterCreateCount().continueOnSuccessWithTask(device.apiAccessExecutor) { counter -> Task<OpaquePointer> in
-                self.counter = counter
-                print("counter :",counter)
-                return counter.comparatorCreate(op: MBL_MW_COMPARATOR_OP_EQ, mode: MBL_MW_COMPARATOR_MODE_ABSOLUTE, references: [Float(2999)])
-            }.continueOnSuccessWithTask(device.apiAccessExecutor) { comparator -> Task<Void> in
-                print("comp: ", comparator)
-                mbl_mw_event_record_commands(comparator)
-                print("led")
-                device.flashLED(color: .red, intensity: 1.0, _repeat: 1)
-                mbl_mw_dataprocessor_counter_set_state(self.counter, 0)
-                print("event end")
-                return comparator.eventEndRecord()
-            }.continueOnSuccessWithTask(device.apiAccessExecutor) { _ -> Task<Int32> in
-                print("macro end")
-                return device.macroEndRecord()
-            }.continueOnSuccessWith(device.apiAccessExecutor) { id in
-                self.id = Int(id)
-                print("macro with id: ",id)
-            }.continueWith(device.apiAccessExecutor) { _ in
-                print("macro execute")
-                mbl_mw_macro_execute(device.board, UInt8(self.id))
-                print("done")
-                connectExpectation.fulfill()
-            }
+
+            var subs = Set<AnyCancellable>()
+            try XCTUnwrap(switcher)
+                .accounterCreateCount()
+                .flatMap { counter -> AnyPublisher<OpaquePointer,MetaWearError> in
+                    self.counter = counter
+                    print("counter: ", counter)
+
+                    return counter.comparatorCreate(
+                        op: MBL_MW_COMPARATOR_OP_EQ,
+                        mode: MBL_MW_COMPARATOR_MODE_ABSOLUTE,
+                        references: [Float(2999)]
+                    )
+                }
+                .flatMap { comparator -> AnyPublisher<Void,MetaWearError> in
+                    print("comp: ", comparator)
+                    mbl_mw_event_record_commands(comparator)
+                    print("led")
+                    device.ledStartFlashing(color: .red, intensity: 1.0, repeating: 1)
+                    mbl_mw_dataprocessor_counter_set_state(self.counter, 0)
+                    print("event end")
+                    return comparator.eventEndRecording().eraseToAnyPublisher()
+                }
+                .flatMap { _ -> AnyPublisher<Int32,MetaWearError> in
+                    print("macro end")
+                    return device.publish().macroEndRecording()
+                        .handleEvents(receiveOutput: { macroID in
+                            let _id = Int(macroID)
+                            self.id = _id
+                            print("macro with id: ", _id)
+                            print("macro execute")
+                            mbl_mw_macro_execute(device.board, UInt8(macroID))
+                        })
+                        .eraseToAnyPublisher()
+                }
+                .sink(receiveCompletion: { completion in
+                    guard case let .failure(error) = completion else { return }
+                    XCTFail(error.localizedDescription)
+
+                }, receiveValue: { _ in
+                    print("done")
+                    exp.fulfill()
+                })
+                .store(in: &subs)
+
         }
-        wait(for: [connectExpectation], timeout: 60)
     }
-    
-    func testiBeacon() {
-        let connectExpectation = XCTestExpectation(description: "connecting")
-        connectNearest().continueWith { t in
-            guard let device = t.result else {
-                return
-            }
-            device.flashLED(color: .green, intensity: 1.0, _repeat: 2)
+
+    func testFlashLED() throws {
+        try wait(forVisualInspection: 4) { device, _ in
+            device.ledStartFlashing(color: .green, intensity: 1.0, repeating: 10)
+        }
+    }
+
+#warning("iBeacon part was commented out")
+    func testiBeacon() throws {
+        try wait(forVisualInspection: 4) { device, _ in
+            device.ledStartFlashing(color: .green, intensity: 1.0, repeating: 2)
             //mbl_mw_ibeacon_enable(device.board)
             //mbl_mw_ibeacon_set_major(device.board, 1111)
             //mbl_mw_ibeacon_set_minor(device.board, 2222)
-            mbl_mw_debug_disconnect(device.board)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                connectExpectation.fulfill()
-            }
+            //        mbl_mw_debug_disconnect(device.board)
         }
-        wait(for: [connectExpectation], timeout: 60)
     }
+
+    // 020101
     
-    func testWhitelist() {
-        let connectExpectation = XCTestExpectation(description: "connecting")
-        connectNearest().continueWith { t in
-            guard let device = t.result else {
-                return
-            }
-            device.flashLED(color: .green, intensity: 1.0, _repeat: 2)
+    func testWhitelist() throws {
+        try wait(forVisualInspection: 60) { device, _ in
+            device.ledStartFlashing(color: .green, intensity: 1.0, repeating: 2)
             var address = MblMwBtleAddress(address_type: 0, address: (0x70, 0x9e, 0x38, 0x95, 0x01, 0x00))
             mbl_mw_settings_add_whitelist_address(device.board, 0, &address)
             mbl_mw_settings_set_ad_parameters(device.board, 418, 0, MBL_MW_BLE_AD_TYPE_CONNECTED_DIRECTED)
             // mbl_mw_settings_set_whitelist_filter_mode(device.board, MBL_MW_WHITELIST_FILTER_SCAN_AND_CONNECTION_REQUESTS)
             mbl_mw_debug_disconnect(device.board)
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                connectExpectation.fulfill()
-            }
         }
-        wait(for: [connectExpectation], timeout: 60)
     }
     
-    func testClearMacro() {
-        let connectExpectation = XCTestExpectation(description: "connecting")
-        connectNearest().continueWith { t in
-            guard let device = t.result else {
-                return
-            }
+    func testClearMacro() throws {
+        try wait(forVisualInspection: 60) { device, _ in
             mbl_mw_macro_erase_all(device.board)
             mbl_mw_debug_reset_after_gc(device.board)
             mbl_mw_debug_disconnect(device.board)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                connectExpectation.fulfill()
-            }
+
         }
-        wait(for: [connectExpectation], timeout: 60)
     }
 }

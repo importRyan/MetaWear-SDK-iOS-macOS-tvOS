@@ -26,6 +26,10 @@
 	<string>Copyright © 2016 MbientLab Inc. All rights reserved.</string>
 	<key>NSMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Testing</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Testing</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

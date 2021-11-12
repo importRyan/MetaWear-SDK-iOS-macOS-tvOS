@@ -38,30 +38,32 @@ import XCTest
 @testable import MetaWearCpp
 
 class FirmwareTests: XCTestCase {
+    
     func testFirmwareUpdateManager() {
         let myExpectation = XCTestExpectation(description: "getting info1")
-        
+        MetaWearFirmwareServer.getAllFirmwareAsync(hardwareRev: "0.1", modelNumber: "0")
+            .flatMap { firmwares in
+                let exps = [
+                    "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.0.4/firmware.bin",
+                    "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.1.0/firmware.bin",
+                    "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.1.1/firmware.bin",
+                    "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.1.2/firmware.bin",
+                    "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.1.3/firmware.bin",
+                    "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.2.3/firmware.bin",
+                    "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.2.4/firmware.bin",
+                    "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.2.5/firmware.bin",
+                    "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.3.4/firmware.bin",
+                    "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.3.6/firmware.bin"
+                ]
+                zip(firmwares, exps, firmwares.indices) { (result, exp, index) in
+                    XCTAssertEqual(result.firmwareURL.absoluteString, exp)
+                    XCTAssertEqual(result.firmwareURL.absoluteString, exp, "\(index)")
+                }
+            }
+
+
         FirmwareServer.getAllFirmwareAsync(hardwareRev: "0.1", modelNumber: "0").continueOnSuccessWithTask { result -> Task<FirmwareBuild> in
-            XCTAssertEqual(result[0].firmwareURL.absoluteString,
-                           "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.0.4/firmware.bin")
-            XCTAssertEqual(result[1].firmwareURL.absoluteString,
-                           "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.1.0/firmware.bin")
-            XCTAssertEqual(result[2].firmwareURL.absoluteString,
-                           "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.1.1/firmware.bin")
-            XCTAssertEqual(result[3].firmwareURL.absoluteString,
-                           "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.1.2/firmware.bin")
-            XCTAssertEqual(result[4].firmwareURL.absoluteString,
-                           "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.1.3/firmware.bin")
-            XCTAssertEqual(result[5].firmwareURL.absoluteString,
-                           "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.2.3/firmware.bin")
-            XCTAssertEqual(result[6].firmwareURL.absoluteString,
-                           "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.2.4/firmware.bin")
-            XCTAssertEqual(result[7].firmwareURL.absoluteString,
-                           "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.2.5/firmware.bin")
-            XCTAssertEqual(result[8].firmwareURL.absoluteString,
-                           "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.3.4/firmware.bin")
-            XCTAssertEqual(result[9].firmwareURL.absoluteString,
-                           "https://mbientlab.com/releases/metawear/0.1/0/vanilla/1.3.6/firmware.bin")
+
             return FirmwareServer.getLatestFirmwareAsync(hardwareRev: "0.1", modelNumber: "0")
         }.continueOnSuccessWithTask { result -> Task<URL> in
             XCTAssertEqual(result.firmwareURL.absoluteString,

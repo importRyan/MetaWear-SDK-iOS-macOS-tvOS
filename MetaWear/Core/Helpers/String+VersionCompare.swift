@@ -59,9 +59,23 @@ extension String {
         return result
     }
     
-    public func isVersion(equalTo targetVersion: String) -> Bool { return compare(toVersion: targetVersion) == .orderedSame }
-    public func isVersion(greaterThan targetVersion: String) -> Bool { return compare(toVersion: targetVersion) == .orderedDescending }
-    public func isVersion(greaterThanOrEqualTo targetVersion: String) -> Bool { return compare(toVersion: targetVersion) != .orderedAscending }
-    public func isVersion(lessThan targetVersion: String) -> Bool { return compare(toVersion: targetVersion) == .orderedAscending }
-    public func isVersion(lessThanOrEqualTo targetVersion: String) -> Bool { return compare(toVersion: targetVersion) != .orderedDescending }
+    public func isMetaWearVersion(equalTo targetVersion: String) -> Bool {
+        compare(toVersion: targetVersion) == .orderedSame
+    }
+
+    public func isMetaWearVersion(greaterThan targetVersion: String) -> Bool {
+        compare(toVersion: targetVersion) == .orderedDescending
+    }
+
+    public func isMetaWearVersion(greaterThanOrEqualTo targetVersion: String) -> Bool {
+        compare(toVersion: targetVersion) != .orderedAscending
+    }
+
+    public func isMetaWearVersion(lessThan targetVersion: String) -> Bool {
+        compare(toVersion: targetVersion) == .orderedAscending
+    }
+
+    public func isMetaWearVersion(lessThanOrEqualTo targetVersion: String) -> Bool {
+        compare(toVersion: targetVersion) != .orderedDescending
+    }
 }

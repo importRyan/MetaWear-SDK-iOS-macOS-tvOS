@@ -41,37 +41,45 @@ import Combine
 
 // MARK: - Perform Firmware Update
 
-public extension MetaWear {
+public extension MetaWearFirmwareServer {
 
     /// Install the provided firmware (or latest if none provided)
     ///
-    func updateFirmware(delegate: DFUProgressDelegate? = nil, build: FirmwareBuild? = nil) -> AnyPublisher<Void,Error> {
+    func updateFirmware(on device: MetaWear, delegate: DFUProgressDelegate? = nil, build: FirmwareBuild? = nil) -> AnyPublisher<Void,Error> {
 
         // Proceed with a connection
-        connectPublisher()
+        device
+            .connectPublisher()
             .eraseErrorType()
 
         // Use provided or default to latest firmware
-            .flatMap { _ -> AnyPublisher<FirmwareBuild, Error> in
+            .flatMap { [weak self, weak device] _ -> AnyPublisher<FirmwareBuild, Error> in
+                guard let self = self, let device = device
+                else { return _Fail(.operationFailed("Self/device unavailable")) }
+
                 if let build = build { return _Just(build) }
-                else { return self.fetchLatestFirmware() }
+                else { return self.fetchLatestFirmware(for: device) }
             }
 
         // Ensure in MetaBoot mode
-            .flatMap { build -> AnyPublisher<Void,Error> in
-                let isInMetaBoot = self.isMetaBoot
-                if isInMetaBoot == false { mbl_mw_debug_jump_to_bootloader(self.board) }
-                return _updateMetaBoot(self, build, delegate)
-                    .delay(for: isInMetaBoot ? 3.0 : 0, tolerance: 0, scheduler: self.apiAccessQueue, options: nil)
+            .flatMap { [weak device, weak delegate] build -> AnyPublisher<Void,Error> in
+                guard let device = device
+                else { return _Fail(.operationFailed("Device unavailable")) }
+
+                let isInMetaBoot = device.isMetaBoot
+                if isInMetaBoot == false { mbl_mw_debug_jump_to_bootloader(device.board) }
+                return _updateMetaBoot(device, build, delegate)
+                    .delay(for: isInMetaBoot ? 3.0 : 0, tolerance: 0, scheduler: device.apiAccessQueue, options: nil)
                     .eraseToAnyPublisher()
             }
 
         // Cleanup after Nordic delegate completes its cached subject or if _updateMetaBoot_ helpers can't find appropriate firmware.
-            .handleEvents(receiveCompletion: { _ in
-                self.cancelConnection()
-                initiatorCache.removeValue(forKey: self)
-                dfuSourceCache.removeValue(forKey: self)
-                dfuControllerCache.removeValue(forKey: self)
+            .handleEvents(receiveCompletion: { [weak device] _ in
+                guard let device = device else { return }
+                device.disconnect()
+                initiatorCache.removeValue(forKey: device)
+                dfuSourceCache.removeValue(forKey: device)
+                dfuControllerCache.removeValue(forKey: device)
             })
             .eraseToAnyPublisher()
     }

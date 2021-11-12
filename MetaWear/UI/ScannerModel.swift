@@ -119,7 +119,7 @@ public class ScannerModel {
         Future { [weak self, weak item] promise in
             guard let self = self, let item = item else { return }
 
-            item.device.flashLED(color: .green, intensity: 1.0, _repeat: 60)
+            item.device.ledStartFlashing(color: .green, intensity: 1.0, repeating: 60)
             self.delegate?.scannerModel(self, confirmBlinkingItem: item) { (confirmed) in
                 promise(.success(confirmed))
             }
@@ -128,7 +128,7 @@ public class ScannerModel {
     }
 
     private func _stopLEDFlashing(for device: MetaWear?, didAcceptItem: Bool) {
-        device?.turnOffLed()
+        device?.ledTurnOff()
         guard let device = device, didAcceptItem == false else { return }
         mbl_mw_debug_disconnect(device.board)
     }
@@ -166,7 +166,7 @@ public extension ScannerModelItem {
 
     func cancelConnecting() {
         isConnecting = false
-        device.cancelConnection()
+        device.disconnect()
         stateDidChangeSubject.send(self)
     }
 

@@ -8,122 +8,78 @@
 
 import Foundation
 import XCTest
+import Combine
 @testable import MetaWear
 @testable import MetaWearCpp
 
-class AccelerometerTests: XCTestCase {
-    var device: MetaWear!
+class AccelerometerTests: XCTestCase, MetaWearTestCase {
+
+    var device: MetaWear?
     var data: [MetaWearData] = []
-    var waitForDisconnection: Task<MetaWear>?
     var expectation: XCTestExpectation?
     var counter: Int = 0
     var handlers = MblMwLogDownloadHandler()
     var logger: OpaquePointer?
     
+    // MARK: - Setup/Teardown - Discover, Connect, Disconnect
+
+    var discovery: AnyCancellable? = nil
+    var disconnectExpectation: XCTestExpectation?
+
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-        let connectExpectation = XCTestExpectation(description: "connecting")
-        MetaWearScanner.shared.startScan(allowDuplicates: true) { (device) in
-            guard let rssi = device.averageRSSI(), rssi > -50 else {
-                return
-            }
-            
-            if (device.averageRSSI() ?? -100) > -50 {
-                MetaWearScanner.shared.stopScan()
-                self.device = device
-                device.logDelegate = ConsoleLogger.shared
-                device.connectAndSetup().continueWith { t -> () in
-                    if let error = t.error {
-                        self.continueAfterFailure = false
-                        XCTFail(error.localizedDescription)
-                    }
-                    self.waitForDisconnection = t.result
-                    connectExpectation.fulfill()
-                }
-            }
-        }
-        wait(for: [connectExpectation], timeout: 60)
+        connectToAnyNearbyMetaWear()
     }
-    
+
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
-        guard let task = self.waitForDisconnection else {
-            return
-        }
-        
-        let disconnectExpectation = XCTestExpectation(description: "disconnecting")
-        task.continueWith { _ -> () in
-            disconnectExpectation.fulfill()
-            return ()
-        }
-        mbl_mw_debug_disconnect(device.board)
-        wait(for: [disconnectExpectation], timeout: 60)
+        XCTAssertNoThrow(try expectDisconnection())
     }
-    
-    func testConnection() {
-        if (!device.isMetaBoot) {
-            print(device.mac!)
-        }
-        print(device.info!.firmwareRevision)
-        print(device.info!.hardwareRevision)
-        print(device.info!.manufacturer)
-        print(device.info!.modelNumber)
-        print(device.info!.serialNumber)
-        device.clearAndReset()
+
+    func testConnection() throws {
+        XCTAssertTrue(device?.isConnectedAndSetup == true)
+        try prepareDeviceForTesting()
     }
+
+    // MARK: - Tests
     
-    func testReadAccelDataConfig() {
+    func testReadAccelDataConfig() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel data config")
         mbl_mw_acc_read_config(device.board, bridge(obj: self)) { (context, board, value) in
+
             let i16 = context!.load(as: UInt16.self)
             print(i16)
+
             let i16bufptr = UnsafeBufferPointer(start: context!.assumingMemoryBound(to: UInt16.self), count: 1)
             let i16array = Array(i16bufptr)
             print(i16array)
+
             let i8bufptr = UnsafeBufferPointer(start: context!.assumingMemoryBound(to: UInt8.self), count: 2)
             let i8array = Array(i8bufptr)
             print(i8array)
+
             switch MblMwAccBmi160Odr(rawValue: UInt32((i8array[0] & 0x0F))) {
-            case MBL_MW_ACC_BMI160_ODR_0_78125Hz:
-                print("ODR = .78125Hz")
-            case MBL_MW_ACC_BMI160_ODR_1_5625Hz:
-                print("ODR = 1.5625Hz")
-            case MBL_MW_ACC_BMI160_ODR_3_125Hz:
-                print("ODR = 3.125Hz")
-            case MBL_MW_ACC_BMI160_ODR_6_25Hz:
-                print("ODR = 6.25Hz")
-            case MBL_MW_ACC_BMI160_ODR_12_5Hz:
-                print("ODR = 12.5Hz")
-            case MBL_MW_ACC_BMI160_ODR_25Hz:
-                print("ODR = 25Hz")
-            case MBL_MW_ACC_BMI160_ODR_50Hz:
-                print("ODR = 50Hz")
-            case MBL_MW_ACC_BMI160_ODR_100Hz:
-                print("ODR = 100Hz")
-            case MBL_MW_ACC_BMI160_ODR_200Hz:
-                print("ODR = 200Hz")
-            case MBL_MW_ACC_BMI160_ODR_400Hz:
-                print("ODR = 400Hz")
-            case MBL_MW_ACC_BMI160_ODR_800Hz:
-                print("ODR = 800Hz")
-            case MBL_MW_ACC_BMI160_ODR_1600Hz:
-                print("ODR = 1600Hz")
-            default:
-                print("Unknown ODR")
+                case MBL_MW_ACC_BMI160_ODR_0_78125Hz: print("ODR = .78125Hz")
+                case MBL_MW_ACC_BMI160_ODR_1_5625Hz:  print("ODR = 1.5625Hz")
+                case MBL_MW_ACC_BMI160_ODR_3_125Hz:   print("ODR = 3.125Hz")
+                case MBL_MW_ACC_BMI160_ODR_6_25Hz:    print("ODR = 6.25Hz")
+                case MBL_MW_ACC_BMI160_ODR_12_5Hz:    print("ODR = 12.5Hz")
+                case MBL_MW_ACC_BMI160_ODR_25Hz:      print("ODR = 25Hz")
+                case MBL_MW_ACC_BMI160_ODR_50Hz:      print("ODR = 50Hz")
+                case MBL_MW_ACC_BMI160_ODR_100Hz:     print("ODR = 100Hz")
+                case MBL_MW_ACC_BMI160_ODR_200Hz:     print("ODR = 200Hz")
+                case MBL_MW_ACC_BMI160_ODR_400Hz:     print("ODR = 400Hz")
+                case MBL_MW_ACC_BMI160_ODR_800Hz:     print("ODR = 800Hz")
+                case MBL_MW_ACC_BMI160_ODR_1600Hz:    print("ODR = 1600Hz")
+                default:                              print("Unknown ODR")
             }
             switch MblMwAccBoschRange(rawValue: UInt32((i8array[1] & 0x0F))) {
-            case MBL_MW_ACC_BOSCH_RANGE_2G:
-                print("Range = 2G")
-            case MBL_MW_ACC_BOSCH_RANGE_4G:
-                print("Range = 4G")
-            case MBL_MW_ACC_BOSCH_RANGE_8G:
-                print("Range = 8G")
-            case MBL_MW_ACC_BOSCH_RANGE_16G:
-                print("Range = 16G")
-            default:
-                print("Unknown Range")
+                case MBL_MW_ACC_BOSCH_RANGE_2G:  print("Range = 2G")
+                case MBL_MW_ACC_BOSCH_RANGE_4G:  print("Range = 4G")
+                case MBL_MW_ACC_BOSCH_RANGE_8G:  print("Range = 8G")
+                case MBL_MW_ACC_BOSCH_RANGE_16G: print("Range = 16G")
+                default:                         print("Unknown Range")
             }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
@@ -132,7 +88,8 @@ class AccelerometerTests: XCTestCase {
         wait(for: [expectation], timeout: 30)
     }
     
-    func testAccelData() {
+    func testAccelData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel data")
         // Set the max range of the accelerometer
         mbl_mw_acc_set_range(device.board, 8.0)
@@ -151,8 +108,8 @@ class AccelerometerTests: XCTestCase {
         // Stop after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             // Stop the stream
-            mbl_mw_acc_stop(self.device.board)
-            mbl_mw_acc_disable_acceleration_sampling(self.device.board)
+            mbl_mw_acc_stop(device.board)
+            mbl_mw_acc_disable_acceleration_sampling(device.board)
             mbl_mw_datasignal_unsubscribe(accSignal)
             for entry in self.data {
                 let pt: MblMwCartesianFloat = entry.valueAs()
@@ -163,9 +120,10 @@ class AccelerometerTests: XCTestCase {
         }
         wait(for: [expectation], timeout: 30)
     }
-    
-    // NOT CURRENTLY WORKING
-    func testAccelPackedData() {
+
+    #warning("PREVIOUSLY MARKED: NOT CURRENTLY WORKING")
+    func testAccelPackedData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel data")
         // Set the max range of the accelerometer
         mbl_mw_acc_set_range(device.board, 8.0)
@@ -184,8 +142,8 @@ class AccelerometerTests: XCTestCase {
         // Stop after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             // Stop the stream
-            mbl_mw_acc_stop(self.device.board)
-            mbl_mw_acc_disable_acceleration_sampling(self.device.board)
+            mbl_mw_acc_stop(device.board)
+            mbl_mw_acc_disable_acceleration_sampling(device.board)
             mbl_mw_datasignal_unsubscribe(accSignal)
             for entry in self.data {
                 let pt: [MblMwCartesianFloat] = entry.valueAs()
@@ -197,7 +155,8 @@ class AccelerometerTests: XCTestCase {
         wait(for: [expectation], timeout: 30)
     }
     
-    func testAccelLogging() {
+    func testAccelLogging() throws {
+        let device = try XCTUnwrap(device)
         expectation = XCTestExpectation(description: "get accel logger")
         var handlers = MblMwLogDownloadHandler()
         let signal = mbl_mw_acc_bosch_get_acceleration_data_signal(device.board)!
@@ -212,8 +171,8 @@ class AccelerometerTests: XCTestCase {
         mbl_mw_acc_enable_acceleration_sampling(device.board)
         mbl_mw_acc_start(device.board)
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            mbl_mw_acc_stop(self.device.board)
-            mbl_mw_acc_disable_acceleration_sampling(self.device.board)
+            mbl_mw_acc_stop(device.board)
+            mbl_mw_acc_disable_acceleration_sampling(device.board)
             mbl_mw_logger_subscribe(self.logger, bridge(obj: self), { (context, obj) in
                 let acceleration: MblMwCartesianFloat = obj!.pointee.valueAs()
                 print(obj!.pointee.epoch, acceleration)//Double(acceleration.x), y: Double(acceleration.y), z: Double(acceleration.z)
@@ -232,12 +191,13 @@ class AccelerometerTests: XCTestCase {
             handlers.received_unhandled_entry = { (context, data) in
                 print("received_unhandled_entry")
             }
-            mbl_mw_logging_download(self.device.board, 0, &self.handlers)
+            mbl_mw_logging_download(device.board, 0, &self.handlers)
         }
         wait(for: [expectation!], timeout: 35)
     }
     
-    func testAccelAnyMotionData() {
+    func testAccelAnyMotionData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel any motion data")
         // Start the accelerometer
         mbl_mw_acc_start(device.board)
@@ -264,9 +224,9 @@ class AccelerometerTests: XCTestCase {
         // Stop after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             // Stop the stream
-            mbl_mw_acc_bosch_disable_motion_detection(self.device.board, MBL_MW_ACC_BOSCH_MOTION_ANYMOTION)
+            mbl_mw_acc_bosch_disable_motion_detection(device.board, MBL_MW_ACC_BOSCH_MOTION_ANYMOTION)
             // Stop the accelerometer
-            mbl_mw_acc_stop(self.device.board)
+            mbl_mw_acc_stop(device.board)
             // Unsubscribe to any motion
             mbl_mw_datasignal_unsubscribe(accAnyMotionSignal)
             for entry in self.data {
@@ -279,7 +239,8 @@ class AccelerometerTests: XCTestCase {
         wait(for: [expectation], timeout: 30)
     }
     
-    func testAccelNoMotionData() {
+    func testAccelNoMotionData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel no motion data")
         // Start the accelerometer
         mbl_mw_acc_start(device.board)
@@ -306,9 +267,9 @@ class AccelerometerTests: XCTestCase {
         // Stop after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             // Stop the stream
-            mbl_mw_acc_bosch_disable_motion_detection(self.device.board, MBL_MW_ACC_BOSCH_MOTION_NOMOTION)
+            mbl_mw_acc_bosch_disable_motion_detection(device.board, MBL_MW_ACC_BOSCH_MOTION_NOMOTION)
             // Stop the accelerometer
-            mbl_mw_acc_stop(self.device.board)
+            mbl_mw_acc_stop(device.board)
             // Unsubscribe to any motion
             mbl_mw_datasignal_unsubscribe(accNoMotionSignal)
             for entry in self.data {
@@ -321,7 +282,8 @@ class AccelerometerTests: XCTestCase {
         wait(for: [expectation], timeout: 30)
     }
     
-    func testAccelSigMotionData() {
+    func testAccelSigMotionData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel sig motion data")
         // Start the accelerometer
         mbl_mw_acc_start(device.board)
@@ -347,9 +309,9 @@ class AccelerometerTests: XCTestCase {
         // Stop after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             // Stop the stream
-            mbl_mw_acc_bosch_disable_motion_detection(self.device.board, MBL_MW_ACC_BOSCH_MOTION_SIGMOTION)
+            mbl_mw_acc_bosch_disable_motion_detection(device.board, MBL_MW_ACC_BOSCH_MOTION_SIGMOTION)
             // Stop the accelerometer
-            mbl_mw_acc_stop(self.device.board)
+            mbl_mw_acc_stop(device.board)
             // Unsubscribe to any motion
             mbl_mw_datasignal_unsubscribe(accSigMotionSignal)
             for entry in self.data {
@@ -362,7 +324,8 @@ class AccelerometerTests: XCTestCase {
         wait(for: [expectation], timeout: 30)
     }
     
-    func testAccelStepDetectorData() {
+    func testAccelStepDetectorData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel step detector data")
         // Start the accelerometer
         mbl_mw_acc_start(device.board)
@@ -385,9 +348,9 @@ class AccelerometerTests: XCTestCase {
         // Stop after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             // Stop the stream
-            mbl_mw_acc_bmi270_disable_step_detector(self.device.board)
+            mbl_mw_acc_bmi270_disable_step_detector(device.board)
             // Stop the accelerometer
-            mbl_mw_acc_stop(self.device.board)
+            mbl_mw_acc_stop(device.board)
             // Unsubscribe to any motion
             mbl_mw_datasignal_unsubscribe(accStepSignal)
             for entry in self.data {
@@ -400,7 +363,8 @@ class AccelerometerTests: XCTestCase {
         wait(for: [expectation], timeout: 30)
     }
     
-    func testReadAccelStepCounterData() {
+    func testReadAccelStepCounterData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "read accel step counter data")
         // Read
         mbl_mw_acc_bmi270_read_step_counter(device.board, bridge(obj: self)) { (context, board, value) in
@@ -413,7 +377,8 @@ class AccelerometerTests: XCTestCase {
         wait(for: [expectation], timeout: 30)
     }
     
-    func testAccelStepCounterData() {
+    func testAccelStepCounterData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel step counter data")
         // Start the accelerometer
         mbl_mw_acc_start(device.board)
@@ -425,7 +390,7 @@ class AccelerometerTests: XCTestCase {
         mbl_mw_acc_bmi270_set_step_counter_trigger(device.board, 1) //every 20 steps
         mbl_mw_acc_bmi270_write_step_counter_config(device.board)
         // Reset the counter
-        mbl_mw_acc_bmi270_reset_step_counter(self.device.board)
+        mbl_mw_acc_bmi270_reset_step_counter(device.board)
         // Get any motion signal
         let accStepSignal = mbl_mw_acc_bmi270_get_step_counter_data_signal(device.board) //mbl_mw_acc_bmi160_get_step_counter_data_signal
         mbl_mw_datasignal_subscribe(accStepSignal, bridge(obj: self)) { (context, dataPtr) in
@@ -441,11 +406,11 @@ class AccelerometerTests: XCTestCase {
         // Stop after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
             // Reset the counter
-            mbl_mw_acc_bmi270_reset_step_counter(self.device.board)
+            mbl_mw_acc_bmi270_reset_step_counter(device.board)
             // Stop the stream
-            mbl_mw_acc_bmi270_disable_step_counter(self.device.board)
+            mbl_mw_acc_bmi270_disable_step_counter(device.board)
             // Stop the accelerometer
-            mbl_mw_acc_stop(self.device.board)
+            mbl_mw_acc_stop(device.board)
             // Unsubscribe to any motion
             mbl_mw_datasignal_unsubscribe(accStepSignal)
             for entry in self.data {
@@ -458,7 +423,8 @@ class AccelerometerTests: XCTestCase {
         wait(for: [expectation], timeout: 30)
     }
 
-    func testAccelWristGestureData() {
+    func testAccelWristGestureData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel wrist gesture data")
         // Start the accelerometer
         mbl_mw_acc_start(device.board)
@@ -511,9 +477,9 @@ class AccelerometerTests: XCTestCase {
         // Stop after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 25) {
             // Stop the stream
-            mbl_mw_acc_bmi270_disable_wrist_gesture(self.device.board)
+            mbl_mw_acc_bmi270_disable_wrist_gesture(device.board)
             // Stop the accelerometer
-            mbl_mw_acc_stop(self.device.board)
+            mbl_mw_acc_stop(device.board)
             // Unsubscribe to any motion
             mbl_mw_datasignal_unsubscribe(accSignal)
             for entry in self.data {
@@ -526,7 +492,8 @@ class AccelerometerTests: XCTestCase {
         wait(for: [expectation], timeout: 30)
     }
     
-    func testAccelWristWakeupData() {
+    func testAccelWristWakeupData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel wrist gesture data")
         // Start the accelerometer
         mbl_mw_acc_start(device.board)
@@ -581,9 +548,9 @@ class AccelerometerTests: XCTestCase {
         // Stop after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 25) {
             // Stop the stream
-            mbl_mw_acc_bmi270_disable_wrist_wakeup(self.device.board)
+            mbl_mw_acc_bmi270_disable_wrist_wakeup(device.board)
             // Stop the accelerometer
-            mbl_mw_acc_stop(self.device.board)
+            mbl_mw_acc_stop(device.board)
             // Unsubscribe to any motion
             mbl_mw_datasignal_unsubscribe(accSignal)
             for entry in self.data {
@@ -596,7 +563,8 @@ class AccelerometerTests: XCTestCase {
         wait(for: [expectation], timeout: 30)
     }
     
-    func testAccelActivityData() {
+    func testAccelActivityData() throws {
+        let device = try XCTUnwrap(device)
         let expectation = XCTestExpectation(description: "get accel activity data")
         // Start the accelerometer
         mbl_mw_acc_start(device.board)
@@ -619,9 +587,9 @@ class AccelerometerTests: XCTestCase {
         // Stop after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 25) {
             // Stop the stream
-            mbl_mw_acc_bmi270_disable_activity_detection(self.device.board)
+            mbl_mw_acc_bmi270_disable_activity_detection(device.board)
             // Stop the accelerometer
-            mbl_mw_acc_stop(self.device.board)
+            mbl_mw_acc_stop(device.board)
             // Unsubscribe to any motion
             mbl_mw_datasignal_unsubscribe(accSignal)
             for entry in self.data {

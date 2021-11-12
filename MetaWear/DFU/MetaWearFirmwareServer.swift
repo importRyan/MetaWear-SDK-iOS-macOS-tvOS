@@ -58,24 +58,24 @@ public class MetaWearFirmwareServer {
 
 /// See `MetaWear+UpdateFirmware.swift` for installation.
 
-public extension MetaWear {
+public extension MetaWearFirmwareServer {
 
     /// Get a pointer to the latest firmware for this device
     ///
-    func fetchLatestFirmware() -> AnyPublisher<FirmwareBuild,Error> {
-        Publishers.Zip(readHardwareRev(), readModelNumber())
+    func fetchLatestFirmware(for device: MetaWear) -> AnyPublisher<FirmwareBuild,Error> {
+        Publishers.Zip(device.readCharacteristic(.hardwareRevision), device.readCharacteristic(.modelNumber))
             .eraseErrorType()
-            .flatMap(MetaWearFirmwareServer.getLatestFirmwareAsync)
+            .flatMap(Self.getLatestFirmwareAsync)
             .eraseToAnyPublisher()
     }
 
     /// Get the latest firmware to update (if any)
     /// - Returns: Nil if already on latest, otherwise the latest build
     ///
-    func fetchRelevantFirmwareUpdate() -> AnyPublisher<FirmwareBuild?,Error> {
-        Publishers.Zip(fetchLatestFirmware(), readFirmwareRev().eraseErrorType())
+    func fetchRelevantFirmwareUpdate(for device: MetaWear) -> AnyPublisher<FirmwareBuild?,Error> {
+        Publishers.Zip(self.fetchLatestFirmware(for: device), device.readCharacteristic(.firmwareRevision).eraseErrorType())
             .map { latestBuild, boardFirmware -> FirmwareBuild? in
-                boardFirmware.isVersion(lessThan: latestBuild.firmwareRev) ? latestBuild : nil
+                boardFirmware.isMetaWearVersion(lessThan: latestBuild.firmwareRev) ? latestBuild : nil
             }
             .eraseToAnyPublisher()
     }
@@ -259,8 +259,8 @@ extension MetaWearFirmwareServer {
 
         let sdkVersion = Bundle(for: MetaWear.self).infoDictionary?["CFBundleShortVersionString"] as! String
         return potentialVersions
-            .filter { sdkVersion.isVersion(greaterThanOrEqualTo: $1["min-ios-version"]!) }
-            .sorted { $0.key.isVersion(lessThan: $1.key) }
+            .filter { sdkVersion.isMetaWearVersion(greaterThanOrEqualTo: $1["min-ios-version"]!) }
+            .sorted { $0.key.isMetaWearVersion(lessThan: $1.key) }
             .map {
                 FirmwareBuild(hardwareRev: device.hardware,
                               modelNumber: device.model,

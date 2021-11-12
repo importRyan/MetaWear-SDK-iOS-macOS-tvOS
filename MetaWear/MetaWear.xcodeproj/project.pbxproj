@@ -54,6 +54,12 @@
 		6F8D972C1AF668270B9DA1C1 /* Pods_MetaWear_MetaWear_tvOS_MetaWearIntegrationTestHost_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE2A1E686EA067BA1F21C94C /* Pods_MetaWear_MetaWear_tvOS_MetaWearIntegrationTestHost_tvOS.framework */; };
 		7DFB8E3E757AA59FB6B87556 /* Pods_MetaWear_MetaWear_tvOS_MetaWearUnitTests_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D098693F507F95523CEC2456 /* Pods_MetaWear_MetaWear_tvOS_MetaWearUnitTests_tvOS.framework */; };
 		8AEA9C538942199830BE7B6B /* Pods_MetaWearIntegrationTests_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AFEB932F09D8B4BB720E75C2 /* Pods_MetaWearIntegrationTests_macOS.framework */; };
+		9482E579273EE70400E6FE9D /* MetaWearTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9482E577273EE6B400E6FE9D /* MetaWearTestCase.swift */; };
+		9482E57A273EE70700E6FE9D /* MetaWearTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9482E577273EE6B400E6FE9D /* MetaWearTestCase.swift */; };
+		9482E57B273EE70900E6FE9D /* MetaWearTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9482E577273EE6B400E6FE9D /* MetaWearTestCase.swift */; };
+		94F1E306274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94F1E305274213E000EC0509 /* ManualConnectDisconnectTests.swift */; };
+		94F1E307274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94F1E305274213E000EC0509 /* ManualConnectDisconnectTests.swift */; };
+		94F1E308274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94F1E305274213E000EC0509 /* ManualConnectDisconnectTests.swift */; };
 		ABB5532025F8316500F36FEC /* LoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB5531F25F8316500F36FEC /* LoggingTests.swift */; };
 		ABB5532125F8316500F36FEC /* LoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB5531F25F8316500F36FEC /* LoggingTests.swift */; };
 		ABB5532225F8316500F36FEC /* LoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB5531F25F8316500F36FEC /* LoggingTests.swift */; };
@@ -201,6 +207,8 @@
 		69A168E76C9AD014BCBC7055 /* Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS/Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS.debug.xcconfig"; sourceTree = "<group>"; };
 		8469164A5DAB31B6EA449431 /* Pods-MetaWearIntegrationTests-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWearIntegrationTests-macOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWearIntegrationTests-macOS/Pods-MetaWearIntegrationTests-macOS.debug.xcconfig"; sourceTree = "<group>"; };
 		8AECD55451FBEBB8F4A761BF /* Pods_MetaWearIntegrationTests_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MetaWearIntegrationTests_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9482E577273EE6B400E6FE9D /* MetaWearTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaWearTestCase.swift; sourceTree = "<group>"; };
+		94F1E305274213E000EC0509 /* ManualConnectDisconnectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualConnectDisconnectTests.swift; sourceTree = "<group>"; };
 		98AB2A2F1532F208CC5185D8 /* Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.release.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.release.xcconfig"; sourceTree = "<group>"; };
 		9A48D104D1B7CCF64BA84E3D /* Pods_MetaWear_MetaWear_watchOS_MetaWearIntegrationTestHost_watchOS_Extension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MetaWear_MetaWear_watchOS_MetaWearIntegrationTestHost_watchOS_Extension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D2CC86004B9E8F7F816C2E3 /* Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.debug.xcconfig"; sourceTree = "<group>"; };
@@ -438,7 +446,9 @@
 		40703EB01D94C3C100F38FF0 /* Integration */ = {
 			isa = PBXGroup;
 			children = (
+				9482E577273EE6B400E6FE9D /* MetaWearTestCase.swift */,
 				404057B0209A7CB700591D6B /* ManualTests.swift */,
+				94F1E305274213E000EC0509 /* ManualConnectDisconnectTests.swift */,
 				404057B1209A7CB700591D6B /* Tests.swift */,
 				ABEEADC225D7580300AD1F88 /* AccelerometerTests.swift */,
 				ABEEADC625D758FF00AD1F88 /* GyroscopeTests.swift */,
@@ -1417,6 +1427,8 @@
 				ABB5532025F8316500F36FEC /* LoggingTests.swift in Sources */,
 				ABEEADC325D7580300AD1F88 /* AccelerometerTests.swift in Sources */,
 				ABEEADC725D758FF00AD1F88 /* GyroscopeTests.swift in Sources */,
+				94F1E306274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */,
+				9482E579273EE70400E6FE9D /* MetaWearTestCase.swift in Sources */,
 				4058ABC5211D10A600A50323 /* Tests.swift in Sources */,
 				4058ABC6211D10AA00A50323 /* ManualTests.swift in Sources */,
 			);
@@ -1446,6 +1458,8 @@
 				ABB5532225F8316500F36FEC /* LoggingTests.swift in Sources */,
 				ABEEADC525D7580300AD1F88 /* AccelerometerTests.swift in Sources */,
 				ABEEADC925D758FF00AD1F88 /* GyroscopeTests.swift in Sources */,
+				94F1E308274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */,
+				9482E57B273EE70900E6FE9D /* MetaWearTestCase.swift in Sources */,
 				404057B4209A7CB700591D6B /* ManualTests.swift in Sources */,
 				404057B7209A7CB700591D6B /* Tests.swift in Sources */,
 			);
@@ -1467,6 +1481,8 @@
 				ABB5532125F8316500F36FEC /* LoggingTests.swift in Sources */,
 				ABEEADC425D7580300AD1F88 /* AccelerometerTests.swift in Sources */,
 				ABEEADC825D758FF00AD1F88 /* GyroscopeTests.swift in Sources */,
+				94F1E307274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */,
+				9482E57A273EE70700E6FE9D /* MetaWearTestCase.swift in Sources */,
 				404057B3209A7CB700591D6B /* ManualTests.swift in Sources */,
 				404057B6209A7CB700591D6B /* Tests.swift in Sources */,
 			);

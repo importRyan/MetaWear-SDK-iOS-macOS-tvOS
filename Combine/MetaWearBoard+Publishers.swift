@@ -37,47 +37,9 @@ import Foundation
 import MetaWearCpp
 import Combine
 
-public extension MetaWear {
+public typealias MetaWearBoard = OpaquePointer
 
-    /// Collects an array of logger signals created before this session.
-    ///
-    func createAnonymousDatasignals() -> MetaPublisher<[OpaquePointer]> {
-
-        board
-            .createAnonymousDatasignals()
-            .erase(subscribeOn: self.apiAccessQueue)
-    }
-
-    /// Creates a timer on the MetaWear.
-    ///
-    func createTimer(period: UInt32,
-                     repetitions: UInt16 = 0xFFFF,
-                     immediateFire: Bool = false) -> MetaPublisher<OpaquePointer> {
-
-        board
-            .createTimer(period: period, repetitions: repetitions, immediateFire: immediateFire)
-            .erase(subscribeOn: self.apiAccessQueue)
-    }
-
-    /// Ends macro recordings.
-    ///
-    func macroEndRecording() -> MetaPublisher<Int32> {
-        board
-            .macroEndRecording()
-            .erase(subscribeOn: self.apiAccessQueue)
-    }
-
-    /// Stops logging, deletes recorded logs and macros, tears down the board and disconnects.
-    ///
-    func resetToFactoryDefaults() {
-        board.resetToFactoryDefaults()
-    }
-
-}
-
-// MARK: - Helper Methods to Above
-
-public extension OpaquePointer {
+public extension MetaWearBoard {
 
     /// When pointing to a board, this stops logging, deletes recorded logs and macros, tears down the board and disconnects.
     ///
@@ -88,6 +50,26 @@ public extension OpaquePointer {
         mbl_mw_macro_erase_all(self)
         mbl_mw_debug_reset_after_gc(self) //05
         mbl_mw_debug_disconnect(self) //06
+    }
+
+    /// When pointing to a board, ends recording of an `MblMwEvent`. Combine wrapper for `mbl_mw_event_end_record`.
+    ///
+    func eventEndRecording() -> PassthroughSubject<Void,MetaWearError> {
+
+        let subject = PassthroughSubject<Void,MetaWearError>()
+
+        mbl_mw_event_end_record(self, bridgeRetained(obj: subject)) { (context, event, status) in
+            let _subject: PassthroughSubject<Void,MetaWearError> = bridgeTransfer(ptr: context!)
+
+            guard status == 0 else {
+                _subject.send(completion: .failure(.operationFailed("Event end record failed: \(status)")))
+                return
+            }
+            _subject.send()
+            _subject.send(completion: .finished)
+        }
+
+        return subject
     }
 
     /// When pointing to a board, ends macro recordings. Combine wrapper for `mbl_mw_macro_end_record`.
@@ -131,7 +113,7 @@ public extension OpaquePointer {
 
     /// When pointing to a board, collects an array of logger signals created before this session. Combine wrapper for `mbl_mw_metawearboard_create_anonymous_datasignals`.
     ///
-    func createAnonymousDatasignals() -> PassthroughSubject<[OpaquePointer], MetaWearError> {
+    func collectAnonymousLoggerSignals() -> PassthroughSubject<[OpaquePointer], MetaWearError> {
 
         let subject = PassthroughSubject<[OpaquePointer], MetaWearError>()
 

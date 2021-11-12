@@ -32,5 +32,9 @@
 	</dict>
 	<key>WKExtensionDelegateClassName</key>
 	<string>$(PRODUCT_MODULE_NAME).ExtensionDelegate</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Testing</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Testing</string>
 </dict>
 </plist>

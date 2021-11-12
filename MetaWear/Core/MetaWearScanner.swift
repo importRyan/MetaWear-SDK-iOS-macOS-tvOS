@@ -250,6 +250,8 @@ internal extension MetaWearScanner {
         }
     }
 
+    /// Add this device to a persistent list loaded by `.retrieveSavedMetaWears()`
+    ///
     func remember(_ device: MetaWear) {
         let idString = device.peripheral.identifier.uuidString
         var devices = UserDefaults._getRememberedUUIDStrings()
@@ -259,6 +261,8 @@ internal extension MetaWearScanner {
         UserDefaults._save(uuidStrings: devices)
     }
 
+    /// Remove this device from the persistent list loaded by `.retrieveSavedMetaWears()`
+    ///
     func forget(_ device: MetaWear) {
         var devices = UserDefaults._getRememberedUUIDStrings()
         if let idx = devices.firstIndex(of: device.peripheral.identifier.uuidString) {

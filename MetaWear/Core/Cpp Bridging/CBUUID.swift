@@ -34,6 +34,73 @@
  */
 
 import CoreBluetooth
+import Combine
+
+// MARK: - Type safe encapsulation
+
+public extension MWServiceCharacteristic where DataType == UInt8 {
+
+    /// Values: 0 to 100
+    static let batteryLife = MWServiceCharacteristic("Battery Life", .battery, .batteryLife, parse: Self.toUInt8)
+
+    private static func toUInt8(_ data: Data) -> UInt8 {
+        [UInt8](data).first ?? 0
+    }
+}
+
+public extension MWServiceCharacteristic where DataType == String {
+
+    /// The board's manufacturer.
+    static let manufacturerName = MWServiceCharacteristic("Manufacturer Name", .dis, .manufacturerName, parse: Self.toString)
+
+    /// The board's hardware version.
+    static let hardwareRevision = MWServiceCharacteristic("Hardware Revision", .dis, .hardwareRevision, parse: Self.toString)
+
+    /// The board's firmware version.
+    static let firmwareRevision = MWServiceCharacteristic("Firmware Revision", .dis, .firmwareRevision, parse: Self.toString)
+
+    /// The board's model number.
+    static let modelNumber = MWServiceCharacteristic("Model Number", .dis, .modelNumber, parse: Self.toString)
+
+    /// The board's serial number.
+    static let serialNumber = MWServiceCharacteristic("Serial Number", .dis, .serialNumber, parse: Self.toString)
+
+    private static func toString(_ data: Data) -> String {
+        String(data: data, encoding: .utf8) ?? ""
+    }
+}
+
+public extension MWServiceCharacteristic where DataType == DeviceInformation {
+
+    /// The board's manufacturer, hardware version, firmware version, serial number, and model number.
+    ///
+    static let allDeviceInformation = MWServiceCharacteristic("Device Information", .dis, .manufacturerName, parse: Self.handleSeparately)
+
+    private static func handleSeparately(_ data: Data) -> DeviceInformation {
+        fatalError()
+    }
+}
+
+
+/// Defines a response for a Characteristic and Service combo
+///
+public struct MWServiceCharacteristic<DataType> {
+
+    /// Used for error messages
+    public let name: String
+    public let service: MetaWear.Service
+    public let characteristic: MetaWear.Characteristic
+    public var parse: (Data) -> DataType
+
+    internal init(_ name: String, _ service: MetaWear.Service, _ characteristic: MetaWear.Characteristic, parse: @escaping (Data) -> DataType) {
+        self.name = name
+        self.service = service
+        self.characteristic = characteristic
+        self.parse = parse
+    }
+}
+
+// MARK: - CBUUID
 
 /// Bluetooth ID's used by MetaWear
 public extension CBUUID {
@@ -78,6 +145,7 @@ public extension MetaWear {
         case firmwareRevision
         case serialNumber
         case batteryLife
+        case modelNumber
 
         public var cbuuid: CBUUID {
             switch self {
@@ -86,17 +154,35 @@ public extension MetaWear {
                 case .firmwareRevision: return CBUUID(string: "2A26")
                 case .serialNumber:     return CBUUID(string: "2A25")
                 case .batteryLife:      return CBUUID(string: "2A19")
+                case .modelNumber:      return CBUUID(string: "2A24")
             }
         }
 
         public var service: Service {
             switch self {
                 case .manufacturerName: return .dis
+                case .modelNumber:      return .dis
                 case .hardwareRevision: return .dis
                 case .firmwareRevision: return .dis
                 case .serialNumber:     return .dis
                 case .batteryLife:      return .battery
             }
         }
+    }
+}
+
+// MARK: - Internal Utility
+
+internal extension DeviceInformation {
+
+    static func publisher(for device: MetaWear) -> MetaPublisher<DeviceInformation> {
+        Publishers.Zip(device.readCharacteristic(.manufacturerName), device.readCharacteristic(.modelNumber))
+            .zip(device.readCharacteristic(.serialNumber),
+                 device.readCharacteristic(.firmwareRevision),
+                 device.readCharacteristic(.hardwareRevision), { mm, serial, firm, hard in
+                (mm.0, mm.1, serial, firm, hard)
+            })
+            .map(DeviceInformation.init)
+            .eraseToAnyPublisher()
     }
 }

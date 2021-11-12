@@ -48,28 +48,28 @@ public enum LogLevel: Int {
     
     var name: String {
         switch self {
-        case .debug:
-            return "debug"
-        case .info:
-            return "info"
-        case .warning:
-            return "warning"
-        case .error:
-            return "error"
+        case .debug: return "debug"
+        case .info: return "info"
+        case .warning: return "warning"
+        case .error: return "error"
         }
     }
 }
 
 /// Simple logger implementation that prints messagse to the console
-public struct ConsoleLogger: LogDelegate {
+public class ConsoleLogger: LogDelegate {
     public static let shared = ConsoleLogger()
-    
+
+    public var didLog: ((String) -> Void)? = nil
     public var minLevel = LogLevel.info
     public func logWith(_ level: LogLevel, message: String) {
         guard level.rawValue >= minLevel.rawValue else {
             return
         }
+        #if DEBUG
         print("\(level) \(message)")
+        didLog?(message)
+        #endif
     }
 }
 

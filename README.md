@@ -1,102 +1,126 @@
-# MetaWear  SDK for iOS/macOS/tvOS/watchOS by MBIENTLAB
+# MetaWear Swift Combine SDK by MBIENTLAB
 
-[![Platforms](https://img.shields.io/cocoapods/p/MetaWear.svg?style=flat)](http://cocoapods.org/pods/MetaWear)
 [![License](https://img.shields.io/cocoapods/l/MetaWear.svg?style=flat)](https://github.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/blob/master/LICENSE.md)
-[![Version](https://img.shields.io/cocoapods/v/MetaWear.svg?style=flat)](http://cocoapods.org/pods/MetaWear)
+![Screenshot](https://raw.githubusercontent.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/master/Images/Metawear.png)
 
-![alt tag](https://raw.githubusercontent.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/master/Images/Metawear.png)
+Create iOS, macOS, watchOS, and tvOS apps with MetaWear Bluetooth Low Energy 4.0/5.0 wearable sensors, regardless of prior Bluetooth experience.
 
-SDK for creating MetaWear apps that run in the Apple ecosystem.  
+This SDK wraps Combine and type-safe operators around the [MetaWear C++ API](https://github.com/mbientlab/MetaWear-SDK-Cpp) for fast development with modern asynchronous Swift. While flexible for experienced developers, this SDK also abstracts much of CoreBluetooth and C++ so anyone who knows Swift can start regardless of experience.
 
-This is a thin wrapper around the [MetaWear C++ API](https://github.com/mbientlab/MetaWear-SDK-Cpp) so you will find the C++ [documentation](https://mbientlab.com/cppdocs/latest/) and [API reference](https://mbientlab.com/docs/metawear/cpp/latest/globals.html) useful.
+We also offer a Facebook Bolts-based Swift SDK, distributed via Cocoapods, for all Apple platforms.
 
-Also, check out the starter [App](https://github.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/tree/master/StarterProject) and the very through example App [App](https://github.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/tree/master/ExampleApp) for sample code.
 
-### Overview
+## Sample Usage
 
-[MetaWear](https://mbientlab.com) is a complete development and production platform for wearable and connected device applications.
+// Stream accelerometer + calculate moving average
+```swift
+device
+    .publishWhenConnected()
+    .first()
+    .stream(.accelerometer(rate: .hz100, range: .g2))
+    .map(\.yAxis)
+    .scan(5) { $0.reduce(0,+) / 5 }
+    .receive(on: DispatchQueue.main)
+    .sink { [weak self] float in 
+        self?.avg = float
+    }
+    .store(in: &subs)
 
-MetaWear features a number of sensors and peripherals all easily controllable over Bluetooth 4.0/5.0 Low Energy using this SDK, no firmware or hardware experience needed!
+```
 
-The MetaWear hardware comes pre-loaded with a wirelessly upgradeable firmware, so it keeps getting more powerful over time.
+// Find nearby MetaWears (sans duplicates)
+```swift
+let scanner = MetaWearScanner()
+scanner.didDiscoverUniqueDevices
+    .receive(on: DispatchQueue.main)
+    .sink { [weak self] devices in 
+        self?.devices.append(contentsOf: devices)
+    }
+    .store(in: &subs)
+```
 
-### Requirements
+// Connect to a MetaWear
+```swift
+let connectToken = device
+    .connectPublisher()
+    .flashDiscoveryLED(for: delegate) 
+    .saveBoardState()
+    .sink(receiveCompletion: { 
+        switch $0 {
+            case .error(let error):   // Setup error
+            case .finished:           // Disconnected by request
+        }
+    }, receiveValue: { metaWear in {
+                                      // Connection established
+    })
+```
+
+## Comparison to MetaWear Swift Bolts SDK
+
+** Similarities **
+Behaviors are nearly identical. Combine is more convenient for data streams, but delegate patterns are retained where useful. 
+
+The SDK's publishers are almost exclusively `PassthroughSubject`, which as a class shares reference semantics with a Bolts `Task`. (Most Combine publishers are structs.)
+
+** Differences **
+1. New code-completion friendly APIs abstract away handling any `OpaquePointer` for board signals, type casting from C++, module parameters, or characteristic CBUUID handling
+2. Documentation builds in Xcode 13 documentation browser (see exception below)
+3. Multiple subscribers can watch a device's connection state (vs. prior single callback)
+4. Eliminates `ScannerModel` and `ScannerModelItem` as publishers and operators on `MetaWearScanner` and `MetaWear` work well for `DiffableDataSource` and `SwiftUI`
+5. Handles remembered device metadata storage via a new `import MetaWearUserDefaults` library
+6. Slight namespace differences (e.g., aspects of `FirmwareServer`)
+7. Available via Swift Package Manager
+8. Higher minimum iOS requirement of iOS/iPad/tvOS 13.0 or watchOS 6.0 (e.g., iPhone SE/6s, iPad Air (3rd gen), iPad mini 4, 9.7" iPad", and all Watch Series 1)
+9. Higher minimum macOS requirement of 10.15 (Catalina) (e.g., mini/Air/iMac mid 2012, Mac Pro 2013, Macbook early 2015)
+
+
+## Requirements
+**The iOS simulator does not support Bluetooth! Test apps must run on physical iOS devices or Macs (e.g., as an iPad app).**
+
 - [MetaWear board](https://mbientlab.com/store/)
-- [Apple ID](https://appleid.apple.com/), you can now get started for free!  Once you are ready to submit an App to the App Store, you need a paid [Apple Developer Account](https://developer.apple.com/programs/ios/).
-- Device running iOS 10.0 or later with Bluetooth 4.0/5.0 (iOS 13+, XCODE12+, BLE5.0 recommended)
+- [Apple ID](https://appleid.apple.com/), You can start free. To distribute via the App Store, you do need a paid [Apple Developer Account](https://developer.apple.com/programs/ios/).
+- Xcode 12.0 +
+- A test device running macOS Catalina 10.15+, iOS 13+, iPadOS 13+, tvOS 13+ or watchOS 6+
 
-> REQUIREMENT NOTES  
-The iOS simulator doesn’t support Bluetooth 4.0/5.0, so test apps must be run on a real iOS device which requires a developer account.  Bluetooth 4.0 available on iPhone 4S+, iPad 3rd generation+, or iPod Touch 5th generation.
 
-*BLUETOOTH IS NOT SUPPORTED IN THE SIMULATOR*
+## Learning
+You can try our [Combine-specific tutorial series]() and [barebones sample app]().
 
-### License
+Our [MetaBase universal app]() for easy setup of logging and streaming sessions also uses this SDK [source](), but is obviously cluttered with more UI code.
+
+You can also read the C++ API reference and documentation for details about what this SDK calls on. Prior Swift tutorials are still relevant for C++, but will have some Bolts operators that look a little different from Combine. 
+
+[Tutorials](https://mbientlab.com/tutorials/)
+[MetaWear API reference](https://mbientlab.com/docs/metawear/cpp/latest/globals.html)
+[C++ API documentation](https://mbientlab.com/cppdocs/latest/)
+
+[App](https://github.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/tree/master/StarterProject)
+[App](https://github.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/tree/master/ExampleApp)
+
+Reach out to the [community](https://mbientlab.com/community/) if you encounter any MetaWear-specific problems, or just want to chat :)
+
+[mBientLab](https://mbientlab.com)
+[Xcode](https://developer.apple.com/xcode/)
+[Swift](https://developer.apple.com/swift/)
+
+## License
 See the [License](https://github.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/blob/master/LICENSE.md)
 
-### Support
-Reach out to the [community](https://mbientlab.com/community/) if you encounter any problems, or just want to chat :)
 
-## Getting Started
 
-### Pre-Installation
 
-#### Xcode
-You need to be profficient with [Xcode](https://developer.apple.com/xcode/) development to use these APIs.
 
-#### Swift
-Our APIs are written and supported in [Swift](https://developer.apple.com/swift/).
 
-#### CocoaPods
-[CocoaPods](https://cocoapods.org/) is a dependency manager for Swift and Objective-C Cocoa projects. It has over 79 thousand libraries and is used in over 3 million apps. CocoaPods can help you scale your projects elegantly.
 
-CocoaPods is built with Ruby and is installable with the default Ruby available on macOS. We recommend you use the default ruby.
 
-Using the default Ruby install can require you to use sudo when installing gems. Further installation instructions are in the guides.
 
-```sh
-sudo gem install cocoapods
-```
-### Installation
-[MetaWear](https://cocoapods.org/pods/MetaWear) is available through CocoaPods. To install it, simply add the following line to your Podfile:
 
-Then list the dependencies in a text file named Podfile in your Xcode project directory:
 
-```ruby
-platform :ios, '14.0'
-use_frameworks!
-target 'MyApp' do
-    // LOCAL
-    pod "MetaWear", :subspecs => ['UI', 'AsyncUtils', 'DFU']
-    // COCOA POD
-    pod "MetaWear"
-    // COCOA POD RELEASE SPECIFIC
-    pod "MetaWear", '~> '4.0.2'
-end
-```
-Tip: CocoaPods provides a pod init command to create a Podfile with smart defaults. You should use it.
 
-Now you can install the dependencies in your project:
 
-```sh
-pod install
-```
 
-It might be good to update:
 
-```sh
-pod update
-```
-
-Make sure to always open the Xcode workspace instead of the project file when building your project:
-
-```sh
-open App.xcworkspace
-```
-Now you can import your dependencies e.g.:
-
-```sh
-#import MetaWear
-```
+///////////////// FIX BELOW
 
 ### Usage
 Require the metawear package
@@ -154,5 +178,3 @@ MetaWearScanner.shared.startScan(allowDuplicates: true) { (device) in
 }
 ```
 
-### Tutorials
-Tutorials can be found [here](https://mbientlab.com/tutorials/).
