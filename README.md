@@ -12,17 +12,20 @@ We also offer a Facebook Bolts-based Swift SDK, distributed via Cocoapods, for a
 
 ## Sample Usage
 
-// Stream accelerometer + calculate moving average
+// Stream accelerometer + calculate moving axis average on first connection
 ```swift
 device
     .publishWhenConnected()
     .first()
-    .stream(.accelerometer(rate: .hz100, range: .g2))
-    .map(\.yAxis)
-    .scan(5) { $0.reduce(0,+) / 5 }
+    .stream(.accelerometer(range: .g2, rate: .hz100))
+    .map(\.value.y)
+    .collect(.byTimeOrCount(RunLoop.current, .seconds(1), 100))
+    .map { $0.reduce(0,+) / Swift.max(1, Float($0.endIndex)) }
     .receive(on: DispatchQueue.main)
-    .sink { [weak self] float in 
-        self?.avg = float
+    .sink { completion in
+        // Handle error or termination
+    } receiveValue: { [weak self] zSmoothed in
+        self?.z = zSmoothed
     }
     .store(in: &subs)
 
@@ -105,76 +108,3 @@ Reach out to the [community](https://mbientlab.com/community/) if you encounter 
 
 ## License
 See the [License](https://github.com/mbientlab/MetaWear-SDK-iOS-macOS-tvOS/blob/master/LICENSE.md)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////// FIX BELOW
-
-### Usage
-Require the metawear package
-
-```swift
-import MetaWear
-import MetaWearCpp
-```
-
-Call Swift APIs:
-```swift
-device.flashLED(color: .green, intensity: 1.0)
-```
-
-Or direct CPP SDK calls:
-```swift
-var pattern = MblMwLedPattern(high_intensity: 31,
-                              low_intensity: 31,
-                              rise_time_ms: 0,
-                              high_time_ms: 2000,
-                              fall_time_ms: 0,
-                              pulse_duration_ms: 2000,
-                              delay_time_ms: 0,
-                              repeat_count: 0xFF)
-mbl_mw_led_stop_and_clear(device.board)
-mbl_mw_led_write_pattern(device.board, &pattern, color)
-mbl_mw_led_play(device.board)
-```
-Or a mix of both as you can see in the example below.
-
-### Example
-
-Here is a walkthrough to showcase a very basic connect and toggle LED operation.
-```swift
-MetaWearScanner.shared.startScan(allowDuplicates: true) { (device) in
-    // We found a MetaWear board, see if it is close
-    if device.rssi.intValue > -50 {
-        // Hooray! We found a MetaWear board, so stop scanning for more
-        MetaWearScanner.shared.stopScan()
-        // Connect to the board we found
-        device.connectAndSetup().continueWith { t in
-            if let error = t.error {
-                // Sorry we couldn't connect
-                print(error)
-            } else {
-                // Hooray! We connected to a MetaWear board, so flash its LED!
-                var pattern = MblMwLedPattern()
-                mbl_mw_led_load_preset_pattern(&pattern, MBL_MW_LED_PRESET_PULSE)
-                mbl_mw_led_stop_and_clear(device.board)
-                mbl_mw_led_write_pattern(device.board, &pattern, MBL_MW_LED_COLOR_GREEN)
-                mbl_mw_led_play(device.board)
-            }
-        }
-    }
-}
-```
-

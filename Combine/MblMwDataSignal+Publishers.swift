@@ -9,15 +9,25 @@ public typealias EscapingHandler = (() -> Void)?
 public typealias MWDataSignal = OpaquePointer
 
 public extension Publisher where Output == MWDataSignal {
-
+    /// - Parameters:
+    ///   - type: Type you expect to cast (will crash if incorrect)
+    ///   - configure: Block called to configure a stream (optional) before `mbl_mw_datasignal_subscribe` (e.g., `mbl_mw_acc_set_odr`; `mbl_mw_acc_bosch_write_acceleration_config`)
+    ///   - start: Block called after `mbl_mw_datasignal_subscribe` (e.g., `        mbl_mw_acc_enable_acceleration_sampling`; `mbl_mw_acc_start`)
+    ///   - onTerminate: Block called before `mbl_mw_datasignal_unsubscribe` when the pipeline is cancelled or completed (e.g., `mbl_mw_acc_stop`; `mbl_mw_acc_disable_acceleration_sampling`)
+    ///
     func stream<T>(as: T.Type,
+                   configure: EscapingHandler,
                    start: EscapingHandler,
                    onTerminate: EscapingHandler
     ) -> AnyPublisher<Timestamped<T>, MetaWearError> {
+        
         mapToMetaWearError()
             .flatMap { dataSignal -> AnyPublisher<Timestamped<T>, MetaWearError> in
-                start?()
-                return dataSignal.stream(as: T.self, onTerminate: onTerminate)
+                dataSignal
+                    .stream(as: T.self,
+                            configure: configure,
+                            start: start,
+                            onTerminate: onTerminate)
             }
             .eraseToAnyPublisher()
     }
@@ -39,13 +49,23 @@ public extension Publisher where Output == MWDataSignal {
 
 public extension MWDataSignal {
 
-    /// When pointing to a data signal, start streaming the signal. Combine interface for `mbl_mw_datasignal_subscribe`
+    /// When pointing to a data signal, start streaming the signal. Performs:
     /// `mbl_mw_datasignal_is_readable`
     /// `mbl_mw_datasignal_subscribe`
     ///  On cancel: `mbl_mw_datasignal_unsubscribe`
     ///
-    func stream<T>(as: T.Type, onTerminate: EscapingHandler) -> AnyPublisher<Timestamped<T>, MetaWearError> {
-        stream(onTerminate: onTerminate)
+    /// - Parameters:
+    ///   - configure: Block called to configure a stream (optional) before `mbl_mw_datasignal_subscribe` (e.g., `mbl_mw_acc_set_odr`; `mbl_mw_acc_bosch_write_acceleration_config`)
+    ///   - start: Block called after `mbl_mw_datasignal_subscribe` (e.g., `        mbl_mw_acc_enable_acceleration_sampling`; `mbl_mw_acc_start`)
+    ///   - onTerminate: Block called before `mbl_mw_datasignal_unsubscribe` when the pipeline is cancelled or completed (e.g., `mbl_mw_acc_stop`; `mbl_mw_acc_disable_acceleration_sampling`)
+    ///
+    func stream<T>(as: T.Type,
+                   configure: EscapingHandler,
+                   start: EscapingHandler,
+                   onTerminate: EscapingHandler
+    ) -> AnyPublisher<Timestamped<T>, MetaWearError> {
+
+        stream(configure: configure, start: start, onTerminate: onTerminate)
             .mapError { _ in // Replace a generic stream error
                 MetaWearError.operationFailed("Could not stream \(T.self)")
             }
@@ -53,14 +73,26 @@ public extension MWDataSignal {
             .eraseToAnyPublisher()
     }
 
-    /// When pointing to a data signal, start streaming the signal. Combine interface for `mbl_mw_datasignal_subscribe`
+    /// When pointing to a data signal, start streaming the signal. Performs:
     /// `mbl_mw_datasignal_is_readable`
+    /// `.copy()`
     /// `mbl_mw_datasignal_subscribe`
     ///  On cancel: `mbl_mw_datasignal_unsubscribe`
     ///
-    func stream(onTerminate: EscapingHandler) -> AnyPublisher<MetaWearData, MetaWearError> {
+    /// - Parameters:
+    ///   - configure: Block called to configure a stream (optional) before `mbl_mw_datasignal_subscribe` (e.g., `mbl_mw_acc_set_odr`; `mbl_mw_acc_bosch_write_acceleration_config`)
+    ///   - start: Block called after `mbl_mw_datasignal_subscribe` (e.g., `        mbl_mw_acc_enable_acceleration_sampling`; `mbl_mw_acc_start`)
+    ///   - onTerminate: Block called before `mbl_mw_datasignal_unsubscribe` when the pipeline is cancelled or completed (e.g., `mbl_mw_acc_stop`; `mbl_mw_acc_disable_acceleration_sampling`)
+    ///
+    func stream(configure: EscapingHandler,
+                start: EscapingHandler,
+                onTerminate: EscapingHandler
+    ) -> AnyPublisher<MetaWearData, MetaWearError> {
+
         assert(mbl_mw_datasignal_is_readable(self) != 0)
         let subject = PassthroughSubject<MetaWearData, MetaWearError>()
+
+        configure?()
 
         mbl_mw_datasignal_subscribe(self, bridgeRetained(obj: subject)) { (context, dataPtr) in
             let _subject: PassthroughSubject<MetaWearData, MetaWearError> = bridgeTransfer(ptr: context!)
@@ -71,6 +103,8 @@ public extension MWDataSignal {
                 _subject.send(completion: .failure(.operationFailed("Could not subscribe")))
             }
         }
+
+        start?()
 
         return subject
             .handleEvents(receiveCompletion: { completion in
