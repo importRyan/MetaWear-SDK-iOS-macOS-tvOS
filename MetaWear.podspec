@@ -47,17 +47,6 @@ Pod::Spec.new do |s|
     s.frameworks = 'CoreBluetooth'
   end
 
-  s.subspec 'AsyncUtils' do |s|
-    s.source_files = 'MetaWear/AsyncUtils/**/*'
-    s.dependency 'MetaWear/Core'
-  end
-
-  s.subspec 'UI' do |s|
-    s.source_files = 'MetaWear/UI/**/*'
-    s.dependency 'MetaWear/Core'
-    s.dependency 'MetaWear/AsyncUtils'
-  end
-
   s.subspec 'DFU' do |s|
       s.ios.deployment_target = '14.0'
       s.osx.deployment_target = '11.0'

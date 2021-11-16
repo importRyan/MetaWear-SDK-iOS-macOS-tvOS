@@ -4,7 +4,7 @@ abstract_target 'MetaWear' do
     abstract_target 'MetaWear-iOS' do
         platform :ios, '14.0'
         ## LOCAL
-	pod 'MetaWear', :subspecs => ['UI', 'AsyncUtils', 'DFU'], :path => '../'
+	pod 'MetaWear', :subspecs => ['DFU'], :path => '../'
         
         target 'MetaWearIntegrationTestHost-iOS' do
             target 'MetaWearIntegrationTests-iOS' do
@@ -19,7 +19,7 @@ abstract_target 'MetaWear' do
     abstract_target 'MetaWear-macOS' do
         platform :osx, '11.0'
         ## LOCAL
-	pod 'MetaWear', :subspecs => ['UI', 'AsyncUtils', 'DFU'], :path => '../'
+	pod 'MetaWear', :subspecs => ['DFU'], :path => '../'
         
         target 'MetaWearIntegrationTestHost-macOS' do
             target 'MetaWearIntegrationTests-macOS' do
@@ -34,7 +34,7 @@ abstract_target 'MetaWear' do
     abstract_target 'MetaWear-tvOS' do
         platform :tvos, '14.0'
         ## LOCAL
-        pod 'MetaWear', :subspecs => ['UI', 'AsyncUtils'], :path => '../'
+        pod 'MetaWear', :path => '../'
 
         target 'MetaWearIntegrationTestHost-tvOS' do
             target 'MetaWearIntegrationTests-tvOS' do
@@ -50,7 +50,7 @@ abstract_target 'MetaWear' do
     abstract_target 'MetaWear-watchOS' do
         platform :watchos, '7.0'
         ## LOCAL
-        pod 'MetaWear', :subspecs => ['UI', 'AsyncUtils'], :path => '../'
+        pod 'MetaWear', :path => '../'
         
         target 'MetaWearIntegrationTestHost-watchOS Extension' do
         end
