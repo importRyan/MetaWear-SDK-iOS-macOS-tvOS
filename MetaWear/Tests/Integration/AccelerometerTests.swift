@@ -121,39 +121,38 @@ class AccelerometerTests: XCTestCase, MetaWearTestCase {
         wait(for: [expectation], timeout: 30)
     }
 
-    #warning("PREVIOUSLY MARKED: NOT CURRENTLY WORKING")
-    func testAccelPackedData() throws {
-        let device = try XCTUnwrap(device)
-        let expectation = XCTestExpectation(description: "get accel data")
-        // Set the max range of the accelerometer
-        mbl_mw_acc_set_range(device.board, 8.0)
-        mbl_mw_acc_set_odr(device.board, 6.25)
-        mbl_mw_acc_write_acceleration_config(device.board)
-        // Get acc signal
-        let accSignal = mbl_mw_acc_bosch_get_packed_acceleration_data_signal(device.board) // same as mbl_mw_acc_get_packed_acceleration_data_signal
-        mbl_mw_datasignal_subscribe(accSignal, bridge(obj: self)) { (context, dataPtr) in
-            let this: Tests = bridge(ptr: context!)
-            print(dataPtr!.pointee.valueAs() as [MblMwCartesianFloat])
-            this.data.append(dataPtr!.pointee.copy())
-        }
-        // Start sampling and start acc
-        mbl_mw_acc_enable_acceleration_sampling(device.board)
-        mbl_mw_acc_start(device.board)
-        // Stop after 5 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            // Stop the stream
-            mbl_mw_acc_stop(device.board)
-            mbl_mw_acc_disable_acceleration_sampling(device.board)
-            mbl_mw_datasignal_unsubscribe(accSignal)
-            for entry in self.data {
-                let pt: [MblMwCartesianFloat] = entry.valueAs()
-                print("\(pt)")
-            }
-            
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 30)
-    }
+//    func testAccelPackedData() throws {
+//        let device = try XCTUnwrap(device)
+//        let expectation = XCTestExpectation(description: "get accel data")
+//        // Set the max range of the accelerometer
+//        mbl_mw_acc_set_range(device.board, 8.0)
+//        mbl_mw_acc_set_odr(device.board, 6.25)
+//        mbl_mw_acc_write_acceleration_config(device.board)
+//        // Get acc signal
+//        let accSignal = mbl_mw_acc_bosch_get_packed_acceleration_data_signal(device.board) // same as mbl_mw_acc_get_packed_acceleration_data_signal
+//        mbl_mw_datasignal_subscribe(accSignal, bridge(obj: self)) { (context, dataPtr) in
+//            let this: Tests = bridge(ptr: context!)
+//            print(dataPtr!.pointee.valueAs() as [MblMwCartesianFloat])
+//            this.data.append(dataPtr!.pointee.copy())
+//        }
+//        // Start sampling and start acc
+//        mbl_mw_acc_enable_acceleration_sampling(device.board)
+//        mbl_mw_acc_start(device.board)
+//        // Stop after 5 seconds
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+//            // Stop the stream
+//            mbl_mw_acc_stop(device.board)
+//            mbl_mw_acc_disable_acceleration_sampling(device.board)
+//            mbl_mw_datasignal_unsubscribe(accSignal)
+//            for entry in self.data {
+//                let pt: [MblMwCartesianFloat] = entry.valueAs()
+//                print("\(pt)")
+//            }
+//
+//            expectation.fulfill()
+//        }
+//        wait(for: [expectation], timeout: 30)
+//    }
     
     func testAccelLogging() throws {
         let device = try XCTUnwrap(device)
