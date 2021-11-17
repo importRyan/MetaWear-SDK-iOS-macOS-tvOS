@@ -36,18 +36,21 @@
 import MetaWearCpp
 import Combine
 
+public typealias MWDataProcessorSignal = OpaquePointer
+public typealias MWBoardOrDataSignal = OpaquePointer
+
 // MARK: - Data Processor C++ Functions
 
-extension OpaquePointer {
+public extension MWBoardOrDataSignal {
 
     /// Combine interface for `mbl_mw_dataprocessor_accounter_create_count`
     /// Add timer to packet
     ///
-    public func accounterCreate() -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func accounterCreate() -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_accounter_create(self, bridgeRetained(obj: subject)) { (context, counter) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let counter = counter {
                 _subject.send(counter)
@@ -61,11 +64,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_accounter_create_count`
     /// Add counter to packet
     ///
-    public func accounterCreateCount() -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func accounterCreateCount() -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_accounter_create_count(self, bridgeRetained(obj: subject)) { (context, accounter) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let accounter = accounter {
                 _subject.send(accounter)
@@ -79,11 +82,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_accounter_create`
     /// Continuous sum
     ///
-    public func accumulatorCreate() -> AnyPublisher<OpaquePointer, MetaWearError> {
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+    func accumulatorCreate() -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
 
         let code = mbl_mw_dataprocessor_accumulator_create(self, bridgeRetained(obj: subject)) { (context, accumulator) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let accumulator = accumulator {
                 _subject.send(accumulator)
@@ -97,11 +100,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_accumulator_create_size`
     /// Continuous sum
     ///
-    public func accumulatorCreateWithSize(size: UInt8) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func accumulatorCreateWithSize(size: UInt8) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_accumulator_create_size(self, size, bridgeRetained(obj: subject)) { (context, accumulator) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let accumulator = accumulator {
                 _subject.send(accumulator)
@@ -115,11 +118,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_counter_create`
     /// Counter
     ///
-    public func counterCreate() -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func counterCreate() -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_counter_create(self, bridgeRetained(obj: subject)) { (context, counter) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let counter = counter {
                 _subject.send(counter)
@@ -132,11 +135,11 @@ extension OpaquePointer {
 
     /// Combine interface for `mbl_mw_dataprocessor_counter_create_size`
     /// Counter with size
-    public func counterCreateWithSize(size: UInt8) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func counterCreateWithSize(size: UInt8) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_accumulator_create_size(self, size, bridgeRetained(obj: subject)) { (context, counter) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let counter = counter {
                 _subject.send(counter)
@@ -150,11 +153,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_average_create`
     /// Create an averager
     ///
-    public func averagerCreate(size: UInt8) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func averagerCreate(size: UInt8) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_average_create(self, size, bridgeRetained(obj: subject)) { (context, averager) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let averager = averager {
                 _subject.send(averager)
@@ -168,11 +171,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_highpass_create`
     /// Create a high pass filter
     ///
-    public func highpassFilterCreate(size: UInt8) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func highpassFilterCreate(size: UInt8) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_average_create(self, size, bridgeRetained(obj: subject)) { (context, highpass) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let highpass = highpass {
                 _subject.send(highpass)
@@ -186,11 +189,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_lowpass_create`
     /// Create a low pass filter
     ///
-    public func lowpassFilterCreate(size: UInt8) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func lowpassFilterCreate(size: UInt8) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_lowpass_create(self, size, bridgeRetained(obj: subject)) { (context, lowpass) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let lowpass = lowpass {
                 _subject.send(lowpass)
@@ -204,11 +207,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_buffer_create`
     /// Buffer
     ///
-    public func bufferCreate() -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func bufferCreate() -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_buffer_create(self, bridgeRetained(obj: subject)) { (context, buffer) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
             if let buffer = buffer {
                 _subject.send(buffer)
             } else {
@@ -218,14 +221,15 @@ extension OpaquePointer {
         return subject.erasedWithDataProcessorError(code: code)
     }
 
+    #warning("THis is a a loggable and streamble datasignal.")
     /// Combine interface for `mbl_mw_dataprocessor_rms_create`
     /// RMS
     ///
-    public func rmsCreate() -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func rmsCreate() -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_rms_create(self, bridgeRetained(obj: subject)) { (context, rms) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let rms = rms {
                 _subject.send(rms)
@@ -239,11 +243,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_rss_create`
     /// RSS
     ///
-    public func rssCreate() -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func rssCreate() -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_rss_create(self, bridgeRetained(obj: subject)) { (context, rms) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let rms = rms {
                 _subject.send(rms)
@@ -257,11 +261,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_multi_comparator_create`
     /// Compare
     ///
-    public func simpleComparatorCreate(op: MblMwComparatorOperation, reference: Float) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func simpleComparatorCreate(op: MblMwComparatorOperation, reference: Float) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_comparator_create(self, op, reference, bridgeRetained(obj: subject)) { (context, comparator) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let comparator = comparator {
                 _subject.send(comparator)
@@ -275,13 +279,13 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_multi_comparator_create`
     /// Compare
     ///
-    public func comparatorCreate(op: MblMwComparatorOperation, mode: MblMwComparatorMode, references: [Float]) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func comparatorCreate(op: MblMwComparatorOperation, mode: MblMwComparatorMode, references: [Float]) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer, MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal, MetaWearError>()
         var references = references
 
         mbl_mw_dataprocessor_multi_comparator_create(self, op, mode, &references, UInt8(references.count), bridgeRetained(obj: subject)) { (context, comparator) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let comparator = comparator {
                 _subject.send(comparator)
@@ -295,11 +299,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_delta_create`
     /// Change
     ///
-    public func deltaCreate(mode: MblMwDeltaMode, magnitude: Float) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func deltaCreate(mode: MblMwDeltaMode, magnitude: Float) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_delta_create(self, mode, magnitude, bridgeRetained(obj: subject)) { (context, delta) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
             if let delta = delta {
                 _subject.send(delta)
             } else {
@@ -312,11 +316,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_math_create`
     /// Simple math ops
     ///
-    public func mathCreate(op: MblMwMathOperation, rhs: Float, signed: Bool? = nil) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func mathCreate(op: MblMwMathOperation, rhs: Float, signed: Bool? = nil) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let handler: MblMwFnDataProcessor = { (context, math) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let math = math {
                 _subject.send(math)
@@ -340,11 +344,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_packer_create`
     /// Pack
     ///
-    public func packerCreate(count: UInt8) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func packerCreate(count: UInt8) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_packer_create(self, count, bridgeRetained(obj: subject)) { (context, packer) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let packer = packer {
                 _subject.send(packer)
@@ -358,11 +362,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_passthrough_create`
     /// Passthrough
     ///
-    public func passthroughCreate(mode: MblMwPassthroughMode, count: UInt16) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func passthroughCreate(mode: MblMwPassthroughMode, count: UInt16) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_passthrough_create(self, mode, count, bridgeRetained(obj: subject)) { (context, passthrough) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let passthrough = passthrough {
                 _subject.send(passthrough)
@@ -376,11 +380,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_pulse_create`
     /// Pulse detector
     ///
-    public func pulseCreate(operation: MblMwPulseOutput, threshold: Float, width: UInt16) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func pulseCreate(operation: MblMwPulseOutput, threshold: Float, width: UInt16) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_pulse_create(self, operation, threshold, width, bridgeRetained(obj: subject)) { (context, success) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let success = success {
                 _subject.send(success)
@@ -394,11 +398,11 @@ extension OpaquePointer {
     /// Combine interface for `mbl_mw_dataprocessor_sample_create`
     /// Sample
     ///
-    public func sampleCreate(binSize: UInt8) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func sampleCreate(binSize: UInt8) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_sample_create(self, binSize, bridgeRetained(obj: subject)) { (context, sample) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let sample = sample {
                 _subject.send(sample)
@@ -411,11 +415,11 @@ extension OpaquePointer {
 
     /// Combine interface for `mbl_mw_dataprocessor_threshold_create`
     ///
-    public func thresholdCreate(mode: MblMwThresholdMode, boundary: Float, hysteresis: Float) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func thresholdCreate(mode: MblMwThresholdMode, boundary: Float, hysteresis: Float) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         let code = mbl_mw_dataprocessor_threshold_create(self, mode, boundary, hysteresis, bridgeRetained(obj: subject)) { (context, threshold) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let threshold = threshold {
                 _subject.send(threshold)
@@ -428,12 +432,12 @@ extension OpaquePointer {
 
     /// Combine interface for `mbl_mw_dataprocessor_fuser_create`
     ///
-    public func fuserCreate(with: OpaquePointer) -> AnyPublisher<OpaquePointer, MetaWearError> {
+    func fuserCreate(with: OpaquePointer) -> AnyPublisher<MWDataProcessorSignal, MetaWearError> {
 
-        let subject = PassthroughSubject<OpaquePointer,MetaWearError>()
+        let subject = PassthroughSubject<MWDataProcessorSignal,MetaWearError>()
         var array: [OpaquePointer?] = [with]
         let code = mbl_mw_dataprocessor_fuser_create(self, UnsafeMutablePointer(&array), 1,  bridgeRetained(obj: subject)) { (context, delta) in
-            let _subject: PassthroughSubject<OpaquePointer,MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWDataProcessorSignal,MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let delta = delta {
                 _subject.send(delta)
