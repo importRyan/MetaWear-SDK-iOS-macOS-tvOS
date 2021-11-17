@@ -47,9 +47,6 @@ import Combine
 /// Xcode 13.0's documentation browser does not show extensions to
 /// out-of-module types like `Publisher`.
 ///
-/// Use the `apiAccessQueue` to read properties and place calls
-/// into the MetaWear C++ library. All publishers with the
-/// alias `MetaPublisher` run on this queue.
 ///
 /// Example 1. Stream safely-typed data once connected the first time
 /// ```swift
@@ -87,6 +84,11 @@ import Combine
 /// ```swift
 ///
 /// ```
+/// - Warning: Use the `apiAccessQueue` to read `MetaWear` properties and place calls
+/// into the MetaWear C++ library.
+///
+/// - Tip: All publishers with the alias `MetaPublisher` perform work on
+/// the `apiAccessQueue` for you.
 ///
 public class MetaWear: NSObject {
 

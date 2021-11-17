@@ -48,10 +48,10 @@ public class MetaWearScanner: NSObject {
     // MARK: - Discovered Devices
 
     /// All MetaWears discovered by the `CBCentralManager`. Read only on the `bleQueue`.
-    public private(set) var deviceMap: [CBPeripheral: MetaWear] = [:]
+    public private(set) var deviceMap: [UUID: MetaWear] = [:]
 
     /// Publishes the `deviceMap` after adding a new member.
-    public private(set) lazy var discoveredDevices: AnyPublisher<[CBPeripheral: MetaWear], Never> = _makeDiscoveredDevicesPublisher()
+    public private(set) lazy var discoveredDevices: AnyPublisher<[UUID: MetaWear], Never> = _makeDiscoveredDevicesPublisher()
 
     /// Publishes only newly discovered `MetaWear` (from `centralManager(:didDiscover:advertisementData:rssi:)`)
     public private(set) lazy var didDiscoverUniqued: AnyPublisher<MetaWear, Never> = _makeDidDiscoverUniquedPublisher()
@@ -94,7 +94,7 @@ public class MetaWearScanner: NSObject {
     private lazy var didDiscoverMetaWearsUniquedSubject = PassthroughSubject<MetaWear,Never>()
 }
 
-// MARK: - Public API — Scan / Retrieve Connected Metawears
+// MARK: - Public API — Scan / Retrieve Connected MetaWears
 
 public extension MetaWearScanner {
 
@@ -133,8 +133,8 @@ public extension MetaWearScanner {
             let devices = self.central
                 .retrievePeripherals(withIdentifiers: UserDefaults._getRememberedUUIDs())
                 .map { peripheral -> MetaWear in
-                    let device = self.deviceMap[peripheral] ?? MetaWear(peripheral: peripheral, scanner: self)
-                    self.deviceMap[peripheral] = device
+                    let device = self.deviceMap[peripheral.identifier] ?? MetaWear(peripheral: peripheral, scanner: self)
+                    self.deviceMap[peripheral.identifier] = device
                     return device
                 }
 
@@ -152,13 +152,30 @@ public extension MetaWearScanner {
             let services = [CBUUID.metaWearService, .metaWearDfuService]
             let devices = self.central.retrieveConnectedPeripherals(withServices: services)
                 .map { peripheral -> MetaWear in
-                    let device = self.deviceMap[peripheral] ?? MetaWear(peripheral: peripheral, scanner: self)
-                    self.deviceMap[peripheral] = device
+                    let device = self.deviceMap[peripheral.identifier] ?? MetaWear(peripheral: peripheral, scanner: self)
+                    self.deviceMap[peripheral.identifier] = device
                     return device
                 }
 
             promise(.success(devices))
         }
+    }
+
+
+    /// Returns a MetaWear (on your calling queue) from the ``deviceMap``.
+    /// Produces a fatalError if that device does not exist.
+    ///
+    /// - Parameter id: `CBPeripheral.identifier`
+    /// - Returns: MetaWear device
+    ///
+    func getMetaWear(id: UUID) -> MetaWear {
+        var metawear: MetaWear!
+        bleQueue.sync {
+            guard let device = deviceMap[id]
+            else { fatalError("Requested a device that does not exist.") }
+            metawear = device
+        }
+        return metawear
     }
 }
 
@@ -194,28 +211,28 @@ extension MetaWearScanner: CBCentralManagerDelegate {
                                advertisementData: [String : Any],
                                rssi RSSI: NSNumber) {
 
-        if let device = deviceMap[peripheral] {
+        if let device = deviceMap[peripheral.identifier] {
             device._scannerDidDiscover(advertisementData: advertisementData, rssi: RSSI)
             didDiscoverMetaWearsSubject.send(device)
 
         } else {
             let device = MetaWear(peripheral: peripheral, scanner: self)
-            deviceMap[peripheral] = device
+            deviceMap[peripheral.identifier] = device
             device._scannerDidDiscover(advertisementData: advertisementData, rssi: RSSI)
             didDiscoverMetaWearsUniquedSubject.send(device)
         }
     }
 
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        deviceMap[peripheral]?._scannerDidConnect()
+        deviceMap[peripheral.identifier]?._scannerDidConnect()
     }
 
     public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        deviceMap[peripheral]?._scannerDidFailToConnect(error: error)
+        deviceMap[peripheral.identifier]?._scannerDidFailToConnect(error: error)
     }
 
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        deviceMap[peripheral]?._scannerDidDisconnectPeripheral(error: error)
+        deviceMap[peripheral.identifier]?._scannerDidDisconnectPeripheral(error: error)
     }
 
     public func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
@@ -228,7 +245,7 @@ extension MetaWearScanner: CBCentralManagerDelegate {
         // (or had a connection pending) at the time the app was terminated by the system.
         guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else { return }
         for peripheral in peripherals {
-            self.deviceMap[peripheral] = MetaWear(peripheral: peripheral, scanner: self)
+            self.deviceMap[peripheral.identifier] = MetaWear(peripheral: peripheral, scanner: self)
         }
     }
 }
@@ -312,7 +329,7 @@ private extension MetaWearScanner {
             .erase(subscribeOn: self.bleQueue)
     }
 
-    func _makeDiscoveredDevicesPublisher() -> AnyPublisher<[CBPeripheral: MetaWear], Never> {
+    func _makeDiscoveredDevicesPublisher() -> AnyPublisher<[UUID: MetaWear], Never> {
         didDiscoverMetaWearsUniquedSubject
             .compactMap { [weak self] _ in self?.deviceMap }
             .share()
