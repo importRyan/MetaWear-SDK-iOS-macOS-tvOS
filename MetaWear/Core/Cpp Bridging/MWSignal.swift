@@ -21,25 +21,25 @@ import MetaWearCpp
 extension MWSignal where DataType == String, Frequency == MWReadableOnce {
 
     /// Values:
-    static let macAddress = MWSignal("MAC Address", mbl_mw_settings_get_mac_data_signal)
+    public static let macAddress = MWSignal("MAC Address", mbl_mw_settings_get_mac_data_signal)
 
 }
 
 extension MWSignal where DataType == Int8, Frequency == MWReadableOnce {
 
     /// Values: 0 to 100
-    static let batteryPercentage = MWSignal("Battery Level", mbl_mw_settings_get_battery_state_data_signal)
+    public static let batteryPercentage = MWSignal("Battery Level", mbl_mw_settings_get_battery_state_data_signal)
 
 }
 
 extension MWSignal where DataType == MblMwCartesianFloat, Frequency == MWLoggableStreamable {
 
-    /// Runs the accelerometer in its existing configuration
-    static let accelerometer = _accelerometer(configure: nil)
+    /// Runs the accelerometer in its existing or default configuration
+    public static let accelerometer = _accelerometer(configure: nil)
 
     /// Runs the accelerometer in a new configuration
-    static func accelerometer(range: MWAccelerometerGravityRange,
-                              rate: MWAccelerometerSampleFrequency) -> MWSignal {
+    public static func accelerometer(range: MWAccelerometerGravityRange,
+                                     rate: MWAccelerometerSampleFrequency) -> MWSignal {
         _accelerometer(configure: { board in
             mbl_mw_acc_bosch_set_range(board, range.cppEnumValue)
             mbl_mw_acc_set_odr(board, rate.frequency)
@@ -71,6 +71,73 @@ extension MWSignal where DataType == MblMwCartesianFloat, Frequency == MWLoggabl
     }
 }
 
+extension MWSignal where DataType == MblMwSensorOrientation, Frequency == MWLoggableStreamable {
+
+    /// Requires the BMI160 accelerometer module. (The BMI270 does not support orientation and stepping.)
+    public static let orientation = MWSignal(
+        "Orientation",
+        dataSignal: { board in
+            guard mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_ACCELEROMETER) == MBL_MW_MODULE_ACC_TYPE_BMI160 else {
+                throw MetaWearError.operationFailed("Orientation requires a BMI160 module, which this device lacks.")
+            }
+            return mbl_mw_acc_bosch_get_orientation_detection_data_signal(board)
+        },
+        loggerKey: .orientation,
+        configure: { _ in },
+        signalStart: { board in
+            mbl_mw_acc_bosch_enable_orientation_detection(board)
+            mbl_mw_acc_start(board)
+        },
+        streamCleanup: { board in
+            mbl_mw_acc_stop(board)
+            mbl_mw_acc_bosch_disable_orientation_detection(board)
+        },
+        logCleanup: { board in
+            mbl_mw_acc_stop(board)
+            mbl_mw_acc_bosch_disable_orientation_detection(board)
+        }
+    )
+
+}
+
+#warning("What is the correct return? Can this work on 270 per docs?")
+extension MWSignal where DataType == Int32, Frequency == MWLoggableStreamable {
+
+    public static let stepDetector = _steps(configure: nil)
+//
+//    public static func steps(sensitivity: MWStepCounterSensitivity = .normal) -> MWSignal {
+//        _steps(configure: { board in
+//            mbl_mw_acc_bmi160_set_step_counter_mode(board, sensitivity.cppEnumValue)
+//            mbl_mw_acc_bmi160_write_step_counter_config(board)
+//        })
+//    }
+
+    /// Requires the BMI160 accelerometer module. (The BMI270 does not support orientation and stepping.)
+    private static func _steps(configure: ((OpaquePointer) -> Void)? ) -> MWSignal {
+        .init("Steps",
+              dataSignal: { board in
+            guard mbl_mw_metawearboard_lookup_module(board, MBL_MW_MODULE_ACCELEROMETER) == MBL_MW_MODULE_ACC_TYPE_BMI160 else {
+                throw MetaWearError.operationFailed("Orientation requires a BMI160 module, which this device lacks.")
+            }
+            return mbl_mw_acc_bosch_get_orientation_detection_data_signal(board)
+        },
+              loggerKey: .steps,
+              configure: configure ?? { _ in },
+              signalStart: { board in
+            mbl_mw_acc_bmi160_enable_step_detector(board)
+            mbl_mw_acc_start(board)
+        },
+              streamCleanup: { board in
+            mbl_mw_acc_stop(board)
+            mbl_mw_acc_bmi160_disable_step_detector(board)
+        },
+              logCleanup: { board in
+            mbl_mw_acc_stop(board)
+            mbl_mw_acc_bmi160_disable_step_detector(board)
+        })
+    }
+}
+
 
 // MARK: - Internal
 
@@ -83,7 +150,7 @@ public struct MWSignal<DataType, Frequency> {
     public let name: String
 
     /// Cpp function to obtain the signal from the provided `MetaWear` board
-    public let `from`: (OpaquePointer) -> OpaquePointer?
+    public let `from`: (OpaquePointer) throws -> OpaquePointer?
 
     /// When relevant, signal configuration methods
     public let configure: (OpaquePointer) -> Void
@@ -108,7 +175,7 @@ public struct MWReadableOnce {}
 internal extension MWSignal where Frequency == MWLoggableStreamable {
     init(
         _ name: String,
-        dataSignal: @escaping (MetaWearBoard) -> MWDataSignal?,
+        dataSignal: @escaping (MetaWearBoard) throws -> MWDataSignal?,
         loggerKey: MWLoggerKey,
         configure: @escaping (MetaWearBoard) -> Void,
         signalStart: @escaping (MetaWearBoard) -> Void,
@@ -157,8 +224,11 @@ internal extension MWSignal where Frequency == MWReadableOnce {
 //}
 // MARK: - Loggers
 
+#warning("What is the orientation logger key")
 public enum MWLoggerKey: String {
     case acceleration
+    case orientation // Unknown
+    case steps // Unknown
 }
 
 
@@ -221,6 +291,26 @@ public enum MWAccelerometerSampleFrequency: Int, CaseIterable, Identifiable {
 
     public var id: Int { rawValue }
 }
+
+
+/// Available on the BMI160 only.
+public enum MWStepCounterSensitivity: String, CaseIterable, Identifiable {
+    case normal
+    case sensitive
+    case robust
+
+    /// Raw Cpp constant
+    public var cppEnumValue: MblMwAccBmi160StepCounterMode {
+        switch self {
+            case .normal: return MBL_MW_ACC_BMI160_STEP_COUNTER_MODE_NORMAL
+            case .sensitive: return MBL_MW_ACC_BMI160_STEP_COUNTER_MODE_SENSITIVE
+            case .robust: return MBL_MW_ACC_BMI160_STEP_COUNTER_MODE_ROBUST
+        }
+    }
+
+    public var id: RawValue { rawValue }
+}
+
 
 public enum MWAccelerometerModel: CaseIterable {
     case bmi270

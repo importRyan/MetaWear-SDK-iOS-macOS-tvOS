@@ -70,7 +70,7 @@ public extension Publisher where Output == MetaWear, Failure == MetaWearError {
 
         flatMap { metawear -> MetaPublisher<Timestamped<T>> in
             tryMap { metaWear -> MWDataSignal in
-                guard let pointer = signal.from(metaWear.board) else {
+                guard let pointer = try signal.from(metaWear.board) else {
                     throw MetaWearError.operationFailed("Board unavailable for \(signal.name).")
                 }
                 return pointer
@@ -123,19 +123,20 @@ public extension Publisher where Output == MetaWear, Failure == MetaWearError {
     ///
     func readOnce<T>(signal: MWSignal<T, MWReadableOnce>) -> MetaPublisher<T> {
         flatMap { metawear -> MetaPublisher<T> in
+            do {
+                guard let signalPointer = try signal.from(metawear.board)
+                else { throw MetaWearError.operationFailed("Board unavailable for \(signal.name).") }
 
-            guard let pointer = signal.from(metawear.board) else {
-                return Fail(
-                    outputType: T.self,
-                    failure: MetaWearError.operationFailed("Board unavailable for \(signal.name).")
-                ).eraseToAnyPublisher()
+                return signalPointer
+                    .readOnce(as: T.self)
+                    .mapError { _ in // Replace any unspecific type casting failure message
+                        MetaWearError.operationFailed("Failed reading \(signal.name).")
+                    }
+                    .erase(subscribeOn: metawear.apiAccessQueue)
+
+            } catch {
+                return Fail(outputType: T.self, failure: error).mapToMetaWearError()
             }
-
-            return pointer.readOnce(as: T.self)
-                .mapError { _ in // Replace the generic type failure message
-                    MetaWearError.operationFailed("Failed reading \(signal.name).")
-                }
-                .erase(subscribeOn: metawear.apiAccessQueue)
         }
         .eraseToAnyPublisher()
     }
