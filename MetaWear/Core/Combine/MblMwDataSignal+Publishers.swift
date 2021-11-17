@@ -50,7 +50,6 @@ public extension Publisher where Output == MWDataSignal {
 public extension MWDataSignal {
 
     /// When pointing to a data signal, start streaming the signal. Performs:
-    /// `mbl_mw_datasignal_is_readable`
     /// `mbl_mw_datasignal_subscribe`
     ///  On cancel: `mbl_mw_datasignal_unsubscribe`
     ///
@@ -74,7 +73,6 @@ public extension MWDataSignal {
     }
 
     /// When pointing to a data signal, start streaming the signal. Performs:
-    /// `mbl_mw_datasignal_is_readable`
     /// `.copy()`
     /// `mbl_mw_datasignal_subscribe`
     ///  On cancel: `mbl_mw_datasignal_unsubscribe`
@@ -89,7 +87,6 @@ public extension MWDataSignal {
                 onTerminate: EscapingHandler
     ) -> AnyPublisher<MetaWearData, MetaWearError> {
 
-        assert(mbl_mw_datasignal_is_readable(self) != 0)
         let subject = PassthroughSubject<MetaWearData, MetaWearError>()
 
         configure?()
