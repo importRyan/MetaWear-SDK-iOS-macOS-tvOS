@@ -28,7 +28,6 @@ Ensure all reads of MetaWear properties and calls into the C++ library use the `
 ### Identification
 
 - ``DeviceInformation``
-- ``MetaWear/MetaWear/mac``
 - ``MetaWear/MetaWear/readCharacteristic(_:)``
 - ``MWServiceCharacteristic``
 
