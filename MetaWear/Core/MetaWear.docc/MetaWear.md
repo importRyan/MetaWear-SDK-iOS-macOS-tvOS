@@ -1,14 +1,49 @@
 # ``MetaWear``
 
-Do BLE stuff. Lots of 1010101 flying around you.
+Develop Bluetooth Low Energy apps using our sensors and `Combine`
 
-More information goes here.
+This SDK makes configuring and retrieving data streams from MetaWear devices easy, flexible, and concise by leveraging Apple's `Combine` framework across iOS, macOS, watchOS, and tvOS.
 
-```
-metawear.militaryMode().kabooom()
-```
+If you're new to Bluetooth and MetaWear, this SDK offers SwiftUI-like presets that entirely abstract any interactions with the C++ library. You can try the <doc:/tutorials/MetaWear> tutorial and read the source of our MetaBase apps to get up to speed.
+
+For those who want more control, this SDK also exposes publishers convenient for working with `OpaquePointer` chains and your own C++ commands. See <doc:Migrating-From-Bolts>.
 
 ![MetaMotion S.](metamotion.png)
+
+## Basics
+
+You can build an asynchronous `Combine` pipeline by combining:
+1. a start condition — e.g., upon disconnection (to perhaps auto-reconnect)
+2. an action — e.g., `read`, `stream`, `log`, `downloadLog`, `command`
+3. a sensor configuration suggested by code completion
+4. any of the many `Combine` operators for manipulating streams of data or events
+
+###### Example 1: Upon connection, stream accelerometer vectors, switching to main for UI updates ######
+```
+metawear
+   .publishWhenConnected()
+   .first()
+   .stream(.accelerometer(rate: .hz100, range: .g2)
+   .map { myProcessingFunction($0) }
+   .receive(on: DispatchQueue.main)
+```
+
+If you're unfamiliar with `Combine`, see <doc:/tutorials/MetaWear/Renaming-Devices>. This block above is a recipe that you can pass around for further specialization. Execution begins only when you subscribe, which the tutorial explains.
+
+To discover nearby MetaWears, use ``MetaWearScanner``.
+
+###### Example 2: Scan for nearby devices, reporting only unique discoveries ######
+```swift
+let scanner = MetaWearScanner.sharedRestore()
+scanner.startScan(allowDuplicates: false)
+scanner.didDiscoverDeviceUniqued
+       .recieve(on: DispatchQueue.main)
+       .sink { [weak self] device in 
+           self?.devices.append(device)
+       }
+       .store(in: &subs)
+```
+
 
 ## Topics
 
@@ -19,7 +54,7 @@ metawear.militaryMode().kabooom()
 
 ### Essentials
 
-Ensure all reads of MetaWear properties and calls into the C++ library use the ``MetaWear/apiAccessQueue``. That's handled for you by any ``MetaPublisher``.
+Using any ``MetaPublisher`` ensures calls into the C++ library and reads of any properties occur on the ``MetaWear/apiAccessQueue``.
 
 - ``MetaWear/MetaWearScanner``
 - ``MetaWear/MetaWear``
@@ -39,18 +74,20 @@ Ensure all reads of MetaWear properties and calls into the C++ library use the `
 
 ### Stream & Log Sensors
 
-- ``MWSignal``
-- ``MetaWearData``
+- ``MWDataSignal``
+- ``MWData``
 - ``MetaWear/MetaWear/publishIfConnected()``
 - ``MetaWear/MetaWear/publishWhenConnected()``
 - ``MetaWear/MetaWear/publishWhenDisconnected()``
 - ``MetaWear/MetaWear/publish()``
 - ``MWDataSignal``
-- ``MWLoggerKey``
-- ``MWReadableOnce``
-- ``MWLoggableStreamable``
+- ``MWLoggerName``
+- ``MWReadable``
+- ``MWLoggable``
+- ``MWStreamable``
+- ``MWPollable``
 - ``Timestamped``
-- ``MetaWearBoard``
+- ``MWBoard``
 - <doc:/tutorials/MetaWear/Connecting-To-A-MetaWear>
 
 ### Firmware
@@ -81,9 +118,7 @@ You can use the bridge functions. These enums provide an easy reference to C++ c
 
 ### Accelerometer
 
-- ``MWAccelerometerGravityRange``
-- ``MWAccelerometerSampleFrequency``
-- ``MWAccelerometerModel``
+- ``MWAccelerometer``
 - ``MODULE_ACC_TYPE_BMI270``
 - ``MODULE_ACC_TYPE_BMI160``
 - ``MODULE_ACC_TYPE_BMA255``
@@ -107,25 +142,18 @@ You can use the bridge functions. These enums provide an easy reference to C++ c
 
 ### Barometer
 
-- ``MWBarometerIIRFilter``
-- ``MWBarometerModel``
-- ``MWBarometerOversampling``
-- ``MWBarometerStandbyTime``
+- ``MWBarometer``
 - ``MODULE_BARO_TYPE_BME280``
 - ``MODULE_BARO_TYPE_BMP280``
 
 ### GPIO
 
-- ``MWGPIOChangeType``
-- ``MWGPIOMode``
-- ``MWGPIOPin``
-- ``MWGPIOPullMode``
+- ``MWGPIO``
 - ``GPIO_UNUSED_PIN``
 
 ### Gyroscope
 
-- ``MWGyroscopeFrequency``
-- ``MWGyroscopeGraphRange``
+- ``MWGyroscope``
 - ``MODULE_GYRO_TYPE_BMI160``
 - ``MODULE_GYRO_TYPE_BMI270``
 - ``GYRO_ROTATION_X_AXIS_INDEX``
