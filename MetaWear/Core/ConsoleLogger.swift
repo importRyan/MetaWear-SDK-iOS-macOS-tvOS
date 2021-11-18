@@ -56,7 +56,7 @@ public enum LogLevel: Int {
     }
 }
 
-/// Simple logger implementation that prints messagse to the console
+/// Simple logger implementation that prints messages to the console
 public class ConsoleLogger: LogDelegate {
     public static let shared = ConsoleLogger()
 

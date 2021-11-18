@@ -37,9 +37,7 @@ import Foundation
 import MetaWearCpp
 import Combine
 
-public typealias MetaWearBoard = OpaquePointer
-
-public extension MetaWearBoard {
+public extension MWBoard {
 
     /// When pointing to a board, this stops logging, deletes recorded logs and macros, tears down the board and disconnects.
     ///

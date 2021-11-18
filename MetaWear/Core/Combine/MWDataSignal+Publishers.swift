@@ -4,15 +4,26 @@ import Foundation
 import MetaWearCpp
 import Combine
 
-public typealias Timestamped<T> = (timestamp: Date, value: T)
-public typealias EscapingHandler = (() -> Void)?
-public typealias MWDataSignal = OpaquePointer
+// MblMwDataSignal
 
 public extension Publisher where Output == MWDataSignal {
+
+    /// When receiving a data signal, start streaming the signal.
+    ///
+    func stream<S: MWStreamable>(_ streamable: S, board: MWBoard) -> AnyPublisher<Timestamped<S.DataType>, MetaWearError> {
+        mapToMetaWearError()
+            .flatMap { dataSignal -> AnyPublisher<Timestamped<S.DataType>, MetaWearError> in
+                dataSignal.stream(streamable, board: board)
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// When receiving a data signal, start streaming the signal.
+    ///
     /// - Parameters:
     ///   - type: Type you expect to cast (will crash if incorrect)
     ///   - configure: Block called to configure a stream (optional) before `mbl_mw_datasignal_subscribe` (e.g., `mbl_mw_acc_set_odr`; `mbl_mw_acc_bosch_write_acceleration_config`)
-    ///   - start: Block called after `mbl_mw_datasignal_subscribe` (e.g., `        mbl_mw_acc_enable_acceleration_sampling`; `mbl_mw_acc_start`)
+    ///   - start: Block called after `mbl_mw_datasignal_subscribe` (e.g., `mbl_mw_acc_enable_acceleration_sampling`; `mbl_mw_acc_start`)
     ///   - onTerminate: Block called before `mbl_mw_datasignal_unsubscribe` when the pipeline is cancelled or completed (e.g., `mbl_mw_acc_stop`; `mbl_mw_acc_disable_acceleration_sampling`)
     ///
     func stream<T>(as: T.Type,
@@ -27,7 +38,7 @@ public extension Publisher where Output == MWDataSignal {
                     .stream(as: T.self,
                             configure: configure,
                             start: start,
-                            onTerminate: onTerminate)
+                            cleanup: onTerminate)
             }
             .eraseToAnyPublisher()
     }
@@ -36,10 +47,10 @@ public extension Publisher where Output == MWDataSignal {
     ///
     func logger() -> AnyPublisher<OpaquePointer, MetaWearError> {
         mapToMetaWearError()
-        .flatMap { signal -> AnyPublisher<OpaquePointer, MetaWearError> in
-            signal.logger()
-        }
-        .eraseToAnyPublisher()
+            .flatMap { signal -> AnyPublisher<OpaquePointer, MetaWearError> in
+                signal.logger()
+            }
+            .eraseToAnyPublisher()
     }
 }
 
@@ -49,22 +60,39 @@ public extension Publisher where Output == MWDataSignal {
 
 public extension MWDataSignal {
 
-    /// When pointing to a data signal, start streaming the signal. Performs:
-    /// `mbl_mw_datasignal_subscribe`
-    ///  On cancel: `mbl_mw_datasignal_unsubscribe`
+    /// When pointing to a data signal, start streaming the signal.
+    ///
+    func stream<S: MWStreamable>(_ streamable: S, board: MWBoard) -> AnyPublisher<Timestamped<S.DataType>, MetaWearError> {
+        _stream(
+            configure: { streamable.streamStart(board: board) },
+            start: { streamable.streamStart(board: board) },
+            cleanup: { streamable.streamStart(board: board) }
+        )
+            .mapError { _ in // Replace a generic stream error
+                MetaWearError.operationFailed("Could not stream \(S.DataType.self)")
+            }
+            .map(streamable.convert(data:))
+            .eraseToAnyPublisher()
+    }
+
+    /// When pointing to a data signal, start streaming the signal.
+    ///
+    /// Performs:
+    ///   - Handler execution
+    ///   - `mbl_mw_datasignal_subscribe`
+    ///   - On cancel: `mbl_mw_datasignal_unsubscribe`
     ///
     /// - Parameters:
     ///   - configure: Block called to configure a stream (optional) before `mbl_mw_datasignal_subscribe` (e.g., `mbl_mw_acc_set_odr`; `mbl_mw_acc_bosch_write_acceleration_config`)
-    ///   - start: Block called after `mbl_mw_datasignal_subscribe` (e.g., `        mbl_mw_acc_enable_acceleration_sampling`; `mbl_mw_acc_start`)
+    ///   - start: Block called after `mbl_mw_datasignal_subscribe` (e.g., `mbl_mw_acc_enable_acceleration_sampling`; `mbl_mw_acc_start`)
     ///   - onTerminate: Block called before `mbl_mw_datasignal_unsubscribe` when the pipeline is cancelled or completed (e.g., `mbl_mw_acc_stop`; `mbl_mw_acc_disable_acceleration_sampling`)
     ///
     func stream<T>(as: T.Type,
                    configure: EscapingHandler,
-                   start: EscapingHandler,
-                   onTerminate: EscapingHandler
+                   start:     EscapingHandler,
+                   cleanup:   EscapingHandler
     ) -> AnyPublisher<Timestamped<T>, MetaWearError> {
-
-        stream(configure: configure, start: start, onTerminate: onTerminate)
+        _stream(configure: configure, start: start, cleanup: cleanup)
             .mapError { _ in // Replace a generic stream error
                 MetaWearError.operationFailed("Could not stream \(T.self)")
             }
@@ -72,27 +100,17 @@ public extension MWDataSignal {
             .eraseToAnyPublisher()
     }
 
-    /// When pointing to a data signal, start streaming the signal. Performs:
-    /// `.copy()`
-    /// `mbl_mw_datasignal_subscribe`
-    ///  On cancel: `mbl_mw_datasignal_unsubscribe`
-    ///
-    /// - Parameters:
-    ///   - configure: Block called to configure a stream (optional) before `mbl_mw_datasignal_subscribe` (e.g., `mbl_mw_acc_set_odr`; `mbl_mw_acc_bosch_write_acceleration_config`)
-    ///   - start: Block called after `mbl_mw_datasignal_subscribe` (e.g., `        mbl_mw_acc_enable_acceleration_sampling`; `mbl_mw_acc_start`)
-    ///   - onTerminate: Block called before `mbl_mw_datasignal_unsubscribe` when the pipeline is cancelled or completed (e.g., `mbl_mw_acc_stop`; `mbl_mw_acc_disable_acceleration_sampling`)
-    ///
-    func stream(configure: EscapingHandler,
-                start: EscapingHandler,
-                onTerminate: EscapingHandler
-    ) -> AnyPublisher<MetaWearData, MetaWearError> {
+    private func _stream(configure: EscapingHandler,
+                         start:     EscapingHandler,
+                         cleanup:   EscapingHandler
+    ) -> AnyPublisher<MWData, MetaWearError> {
 
-        let subject = PassthroughSubject<MetaWearData, MetaWearError>()
+        let subject = PassthroughSubject<MWData, MetaWearError>()
 
         configure?()
 
         mbl_mw_datasignal_subscribe(self, bridgeRetained(obj: subject)) { (context, dataPtr) in
-            let _subject: PassthroughSubject<MetaWearData, MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWData, MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let dataPtr = dataPtr {
                 _subject.send(dataPtr.pointee.copy())
@@ -105,10 +123,10 @@ public extension MWDataSignal {
 
         return subject
             .handleEvents(receiveCompletion: { completion in
-                onTerminate?()
+                cleanup?()
                 mbl_mw_datasignal_unsubscribe(self)
             }, receiveCancel: {
-                onTerminate?()
+                cleanup?()
                 mbl_mw_datasignal_unsubscribe(self)
             })
             .eraseToAnyPublisher()
@@ -141,50 +159,42 @@ public extension MWDataSignal {
 
 public extension MWDataSignal {
 
-    /// Combine interface for a one-time read of a MetaWear data signal. Performs:
-    /// `mbl_mw_datasignal_subscribe`
-    /// `dataPtr.pointee.copy`
-    /// `.valueAs`
-    /// `mbl_mw_datasignal_read`
-    /// `mbl_mw_datasignal_unsubscribe`  (on cancel or completion)
+    /// When pointing to a data signal, perform a one-time read.
     ///
-    func readOnce<T>(as: T.Type) -> AnyPublisher<T, MetaWearError> {
-        readOnce()
-            .mapError { _ in // Replace a generic readOnce error
-                MetaWearError.operationFailed("Could not read \(T.self)")
+    func read<R: MWReadable>(_ readable: R) -> AnyPublisher<Timestamped<R.DataType>, MetaWearError> {
+        _read()
+            .map(readable.convert(data:))
+            .mapError { _ in // Replace a generic read error (C function pointer cannot form w/ generic)
+                MetaWearError.operationFailed("Could not read \(R.DataType.self)")
             }
-            .map { $0.valueAs() as T }
             .eraseToAnyPublisher()
     }
 
-    /// Combine interface for a one-time read of a MetaWear data signal. Performs:
-    /// `mbl_mw_datasignal_subscribe`
-    /// `dataPtr.pointee.copy`
-    /// `.valueAs`
-    /// `mbl_mw_datasignal_read`
-    /// `mbl_mw_datasignal_unsubscribe` (on cancel or completion)
+    /// When pointing to a data signal, perform a one-time read.
     ///
-    func readOnceTimestamped<T>(as: T.Type) -> AnyPublisher<Timestamped<T>, MetaWearError> {
-        readOnce()
-            .mapError { _ in // Replace a generic readOnce error
-                MetaWearError.operationFailed("Could not read \(T.self)")
-            }
+    /// Performs:
+    ///   - `mbl_mw_datasignal_subscribe`
+    ///   - `dataPtr.pointee.copy` -> ensures lifetime extends beyond closure
+    ///   - `.valueAs` casts from `MetaWearData`
+    ///   - `mbl_mw_datasignal_read`
+    ///   - `mbl_mw_datasignal_unsubscribe` (on cancel or completion)
+    ///
+    func read<T>(as: T.Type) -> AnyPublisher<Timestamped<T>, MetaWearError> {
+        _read()
             .map { ($0.timestamp, $0.valueAs() as T) }
+            .mapError { _ in // Replace a generic read error (C function pointer cannot form w/ generic)
+                MetaWearError.operationFailed("Could not read \(T.self)")
+            }
             .eraseToAnyPublisher()
     }
 
-    /// Combine interface for a one-time read of a MetaWear data signal. Performs:
-    /// `mbl_mw_datasignal_subscribe`
-    /// `dataPtr.pointee.copy` ->  timestamped raw`MetaWearData`
-    /// `mbl_mw_datasignal_read`
-    /// `mbl_mw_datasignal_unsubscribe` (on cancel or completion)
-    ///
-    func readOnce() -> AnyPublisher<MetaWearData, MetaWearError> {
+    private func _read() -> AnyPublisher<MWData, MetaWearError> {
+
         assert(mbl_mw_datasignal_is_readable(self) != 0)
-        let subject = PassthroughSubject<MetaWearData, MetaWearError>()
+        let subject = PassthroughSubject<MWData, MetaWearError>()
 
         mbl_mw_datasignal_subscribe(self, bridgeRetained(obj: subject)) { (context, dataPtr) in
-            let _subject: PassthroughSubject<MetaWearData, MetaWearError> = bridgeTransfer(ptr: context!)
+            let _subject: PassthroughSubject<MWData, MetaWearError> = bridgeTransfer(ptr: context!)
 
             if let dataPtr = dataPtr {
                 _subject.send(dataPtr.pointee.copy())

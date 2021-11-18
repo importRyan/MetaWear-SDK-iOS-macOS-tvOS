@@ -15,9 +15,9 @@ public extension Publisher where Output == MetaWear, Failure == Never {
     ///
     /// - Returns: Pipeline on the BLE queue with the cast data. Fails if not connected.
     ///
-    func readOnce<T>(signal: MWSignal<T, MWReadableOnce>) -> MetaPublisher<T> {
+    func read<R: MWReadable>(signal: R) -> MetaPublisher<Timestamped<R.DataType>> {
         setFailureType(to: MetaWearError.self)
-            .readOnce(signal: signal)
+            .read(signal: signal)
     }
 
     /// Performs a one-time read of a board signal, handling pointer bridging, and casting to the provided type.
@@ -28,9 +28,9 @@ public extension Publisher where Output == MetaWear, Failure == Never {
     ///
     /// - Returns: Pipeline on the BLE queue with the cast data. Fails if not connected.
     ///
-    func readOnce<T>(signal: OpaquePointer, as type: T.Type) -> MetaPublisher<T> {
+    func read<T>(signal: OpaquePointer, as type: T.Type) -> MetaPublisher<Timestamped<T>> {
         setFailureType(to: MetaWearError.self)
-            .readOnce(signal: signal, as: type.self)
+            .read(signal: signal, as: type.self)
     }
 
     /// Stream time-stamped data from the MetaWear board using a type-safe preset (with optional configuration).
@@ -40,7 +40,7 @@ public extension Publisher where Output == MetaWear, Failure == Never {
     ///
     /// - Returns: Pipeline on the BLE queue with the cast data.
     ///
-    func stream<T>(_ signal: MWSignal<T, MWLoggableStreamable>) -> MetaPublisher<Timestamped<T>> {
+    func stream<S: MWStreamable>(_ signal: S) -> MetaPublisher<Timestamped<S.DataType>> {
         setFailureType(to: MetaWearError.self)
             .stream(signal)
     }
@@ -60,10 +60,10 @@ public extension Publisher where Output == MetaWear, Failure == Never {
                    as type: T.Type,
                    configure: EscapingHandler,
                    start: EscapingHandler,
-                   onTerminate: EscapingHandler
+                   cleanup: EscapingHandler
     ) -> MetaPublisher<Timestamped<T>> {
         setFailureType(to: MetaWearError.self)
-            .stream(signal: signal, as: type, configure: configure, start: start, onTerminate: onTerminate)
+            .stream(signal: signal, as: type, configure: configure, start: start, cleanup: cleanup)
     }
 }
 

@@ -14,7 +14,7 @@ import Combine
 class Tests: XCTestCase, MetaWearTestCase {
 
     var device: MetaWear?
-    var data: [MetaWearData] = []
+    var data: [MWData] = []
     var expectation: XCTestExpectation?
     var counter: Int = 0
     var handlers = MblMwLogDownloadHandler()

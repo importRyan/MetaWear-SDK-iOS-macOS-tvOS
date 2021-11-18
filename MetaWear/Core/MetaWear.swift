@@ -68,7 +68,7 @@ import Combine
 /// ```swift
 /// metawear
 ///       .publishIfConnected()
-///       .readOnce(.batteryLife)
+///       .read(.batteryLife)
 ///       .sink(receiveCompletion: {
 ///           switch $0 {
 ///               case .error(let error):   // Setup error
@@ -107,7 +107,7 @@ public class MetaWear: NSObject {
     public var logDelegate: LogDelegate?
 
     /// Pass to MetaWearCpp functions
-    public private(set) var board: OpaquePointer!
+    public private(set) var board: MWBoard!
 
 
     // MARK: - Connection State
@@ -144,7 +144,10 @@ public class MetaWear: NSObject {
 
     // MARK: - Device Identity
 
-    /// MAC address (available after first connection)
+    /// The MAC address (available after first connection) is a 6-byte unique identifier for a MetaWear and any Bluetooth device (e.g., F1:4A:45:90:AC:9D).
+    ///
+    /// To maximize privacy, Apple obfuscates MAC addresses by replacing them with an auto-generated `CBUUID`. While stable locally, it differs between a user's phones and computers. As such, we make the MAC available via our own MetaSensor SDKs and via the Bluetooth Ad packet for easy and fast retrieval in iOS.
+    ///
     public internal(set) var mac: String?
 
     /// Model, serial, firmware, hardware, and manufacturer details (available after first connection)
@@ -762,7 +765,8 @@ private extension MetaWear {
         _setupMacToken?.cancel()
         _setupMacToken = self
             .publish()
-            .readOnce(signal: .macAddress)
+            .read(signal: .macAddress)
+            .map(\.value)
             .sink { [weak self] completion in
                 switch completion {
                     case .finished: return

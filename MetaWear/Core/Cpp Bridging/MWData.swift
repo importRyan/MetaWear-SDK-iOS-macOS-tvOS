@@ -37,9 +37,9 @@ import MetaWearCpp
 
 
 /// Native swift struct for holding data from the MetaWear
-/// This was created because the C++ library destroys MblMwData objects
+/// This was created because the C++ library destroys `MblMwData` objects
 /// after the callbacks, but sometimes we need them to live longer
-public struct MetaWearData {
+public struct MWData {
     public let timestamp: Date
     let data: [UInt8]
     let typeId: MblMwDataTypeId
@@ -50,9 +50,9 @@ public struct MetaWearData {
 }
 
 extension MblMwData {
-    public func copy() -> MetaWearData {
+    public func copy() -> MWData {
         let arrayPtr = value.bindMemory(to: UInt8.self, capacity: Int(length))
-        return MetaWearData(timestamp: timestamp,
+        return MWData(timestamp: timestamp,
                             data: Array(UnsafeBufferPointer(start: arrayPtr, count: Int(length))),
                             typeId: type_id)
     }

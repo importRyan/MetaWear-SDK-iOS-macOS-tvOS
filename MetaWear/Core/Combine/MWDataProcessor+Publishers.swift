@@ -36,9 +36,6 @@
 import MetaWearCpp
 import Combine
 
-public typealias MWDataProcessorSignal = OpaquePointer
-public typealias MWBoardOrDataSignal = OpaquePointer
-
 // MARK: - Data Processor C++ Functions
 
 public extension MWBoardOrDataSignal {
