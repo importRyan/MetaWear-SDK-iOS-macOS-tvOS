@@ -14,10 +14,8 @@
 		404057AD209A796400591D6B /* FirmwareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057AC209A796300591D6B /* FirmwareTests.swift */; };
 		404057AE209A796400591D6B /* FirmwareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057AC209A796300591D6B /* FirmwareTests.swift */; };
 		404057AF209A796400591D6B /* FirmwareTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057AC209A796300591D6B /* FirmwareTests.swift */; };
-		404057B3209A7CB700591D6B /* ManualTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057B0209A7CB700591D6B /* ManualTests.swift */; };
-		404057B4209A7CB700591D6B /* ManualTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057B0209A7CB700591D6B /* ManualTests.swift */; };
-		404057B6209A7CB700591D6B /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057B1209A7CB700591D6B /* Tests.swift */; };
-		404057B7209A7CB700591D6B /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057B1209A7CB700591D6B /* Tests.swift */; };
+		404057B3209A7CB700591D6B /* _UnconvertedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057B0209A7CB700591D6B /* _UnconvertedTests.swift */; };
+		404057B4209A7CB700591D6B /* _UnconvertedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057B0209A7CB700591D6B /* _UnconvertedTests.swift */; };
 		40405836209A83CA00591D6B /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 40405834209A83CA00591D6B /* Interface.storyboard */; };
 		40405838209A83CB00591D6B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40405837209A83CB00591D6B /* Assets.xcassets */; };
 		4040583F209A83CB00591D6B /* MetaWearIntegrationTestHost-watchOS Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4040583E209A83CB00591D6B /* MetaWearIntegrationTestHost-watchOS Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -25,8 +23,7 @@
 		40405846209A83CB00591D6B /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40405845209A83CB00591D6B /* ExtensionDelegate.swift */; };
 		40405848209A83CC00591D6B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40405847209A83CC00591D6B /* Assets.xcassets */; };
 		4040584C209A83CC00591D6B /* MetaWearIntegrationTestHost-watchOS.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 40405832209A83CA00591D6B /* MetaWearIntegrationTestHost-watchOS.app */; };
-		4058ABC5211D10A600A50323 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057B1209A7CB700591D6B /* Tests.swift */; };
-		4058ABC6211D10AA00A50323 /* ManualTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057B0209A7CB700591D6B /* ManualTests.swift */; };
+		4058ABC6211D10AA00A50323 /* _UnconvertedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404057B0209A7CB700591D6B /* _UnconvertedTests.swift */; };
 		40703E831D94C0DB00F38FF0 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 40703E741D94C0AB00F38FF0 /* AppDelegate.m */; };
 		40703E841D94C0E800F38FF0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 40703E761D94C0AB00F38FF0 /* LaunchScreen.storyboard */; };
 		40703E851D94C0E800F38FF0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 40703E781D94C0AB00F38FF0 /* Main.storyboard */; };
@@ -54,21 +51,33 @@
 		6F8D972C1AF668270B9DA1C1 /* Pods_MetaWear_MetaWear_tvOS_MetaWearIntegrationTestHost_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE2A1E686EA067BA1F21C94C /* Pods_MetaWear_MetaWear_tvOS_MetaWearIntegrationTestHost_tvOS.framework */; };
 		7DFB8E3E757AA59FB6B87556 /* Pods_MetaWear_MetaWear_tvOS_MetaWearUnitTests_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D098693F507F95523CEC2456 /* Pods_MetaWear_MetaWear_tvOS_MetaWearUnitTests_tvOS.framework */; };
 		8AEA9C538942199830BE7B6B /* Pods_MetaWearIntegrationTests_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AFEB932F09D8B4BB720E75C2 /* Pods_MetaWearIntegrationTests_macOS.framework */; };
-		9482E579273EE70400E6FE9D /* MetaWearTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9482E577273EE6B400E6FE9D /* MetaWearTestCase.swift */; };
-		9482E57A273EE70700E6FE9D /* MetaWearTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9482E577273EE6B400E6FE9D /* MetaWearTestCase.swift */; };
-		9482E57B273EE70900E6FE9D /* MetaWearTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9482E577273EE6B400E6FE9D /* MetaWearTestCase.swift */; };
-		94F1E306274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94F1E305274213E000EC0509 /* ManualConnectDisconnectTests.swift */; };
-		94F1E307274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94F1E305274213E000EC0509 /* ManualConnectDisconnectTests.swift */; };
-		94F1E308274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94F1E305274213E000EC0509 /* ManualConnectDisconnectTests.swift */; };
-		ABB5532025F8316500F36FEC /* LoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB5531F25F8316500F36FEC /* LoggingTests.swift */; };
-		ABB5532125F8316500F36FEC /* LoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB5531F25F8316500F36FEC /* LoggingTests.swift */; };
-		ABB5532225F8316500F36FEC /* LoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB5531F25F8316500F36FEC /* LoggingTests.swift */; };
-		ABEEADC325D7580300AD1F88 /* AccelerometerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEEADC225D7580300AD1F88 /* AccelerometerTests.swift */; };
-		ABEEADC425D7580300AD1F88 /* AccelerometerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEEADC225D7580300AD1F88 /* AccelerometerTests.swift */; };
-		ABEEADC525D7580300AD1F88 /* AccelerometerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEEADC225D7580300AD1F88 /* AccelerometerTests.swift */; };
-		ABEEADC725D758FF00AD1F88 /* GyroscopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEEADC625D758FF00AD1F88 /* GyroscopeTests.swift */; };
-		ABEEADC825D758FF00AD1F88 /* GyroscopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEEADC625D758FF00AD1F88 /* GyroscopeTests.swift */; };
-		ABEEADC925D758FF00AD1F88 /* GyroscopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEEADC625D758FF00AD1F88 /* GyroscopeTests.swift */; };
+		940E93B52756DC240023C542 /* CommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93B42756DC240023C542 /* CommandTests.swift */; };
+		940E93B62756DC240023C542 /* CommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93B42756DC240023C542 /* CommandTests.swift */; };
+		940E93B72756DC240023C542 /* CommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93B42756DC240023C542 /* CommandTests.swift */; };
+		940E93B92756E1B50023C542 /* _TestState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93B82756E1B50023C542 /* _TestState.swift */; };
+		940E93BA2756E1B50023C542 /* _TestState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93B82756E1B50023C542 /* _TestState.swift */; };
+		940E93BB2756E1B50023C542 /* _TestState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93B82756E1B50023C542 /* _TestState.swift */; };
+		940E93BD2756E8390023C542 /* DeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93BC2756E8390023C542 /* DeviceTests.swift */; };
+		940E93BE2756E8390023C542 /* DeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93BC2756E8390023C542 /* DeviceTests.swift */; };
+		940E93BF2756E8390023C542 /* DeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93BC2756E8390023C542 /* DeviceTests.swift */; };
+		940E93C12756F0B50023C542 /* StreamBMI160Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93C02756F0B50023C542 /* StreamBMI160Tests.swift */; };
+		940E93C22756F0B50023C542 /* StreamBMI160Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93C02756F0B50023C542 /* StreamBMI160Tests.swift */; };
+		940E93C32756F0B50023C542 /* StreamBMI160Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93C02756F0B50023C542 /* StreamBMI160Tests.swift */; };
+		940E93C52757139F0023C542 /* DeviceConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93C42757139F0023C542 /* DeviceConnectionTests.swift */; };
+		940E93C62757139F0023C542 /* DeviceConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93C42757139F0023C542 /* DeviceConnectionTests.swift */; };
+		940E93C72757139F0023C542 /* DeviceConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E93C42757139F0023C542 /* DeviceConnectionTests.swift */; };
+		943484E7274F0FE500E51F8D /* _Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943484E6274F0FE500E51F8D /* _Helpers.swift */; };
+		943484E8274F0FE500E51F8D /* _Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943484E6274F0FE500E51F8D /* _Helpers.swift */; };
+		943484E9274F0FE500E51F8D /* _Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943484E6274F0FE500E51F8D /* _Helpers.swift */; };
+		943484EB274F578C00E51F8D /* LogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943484EA274F578C00E51F8D /* LogTests.swift */; };
+		943484EC274F578C00E51F8D /* LogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943484EA274F578C00E51F8D /* LogTests.swift */; };
+		943484ED274F578C00E51F8D /* LogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943484EA274F578C00E51F8D /* LogTests.swift */; };
+		94E8FC07274ADA26005C6EA9 /* StreamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E8FC06274ADA26005C6EA9 /* StreamTests.swift */; };
+		94E8FC08274ADA26005C6EA9 /* StreamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E8FC06274ADA26005C6EA9 /* StreamTests.swift */; };
+		94E8FC09274ADA26005C6EA9 /* StreamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E8FC06274ADA26005C6EA9 /* StreamTests.swift */; };
+		ABEEADC325D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEEADC225D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift */; };
+		ABEEADC425D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEEADC225D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift */; };
+		ABEEADC525D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEEADC225D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift */; };
 		C0BE9E70E4089C6F08FE590F /* Pods_MetaWear_MetaWear_iOS_MetaWearUnitTests_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E017EC1F72EA22D0ACD7A0B1 /* Pods_MetaWear_MetaWear_iOS_MetaWearUnitTests_iOS.framework */; };
 		F341671D79CCAF86AEAA9A5A /* Pods_MetaWear_MetaWear_macOS_MetaWearUnitTests_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36EF3C0A2070835EA6973292 /* Pods_MetaWear_MetaWear_macOS_MetaWearUnitTests_macOS.framework */; };
 /* End PBXBuildFile section */
@@ -147,8 +156,7 @@
 		2E06F9C64AEA806D32581A30 /* MetaWear.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = MetaWear.podspec; path = ../MetaWear.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		36EF3C0A2070835EA6973292 /* Pods_MetaWear_MetaWear_macOS_MetaWearUnitTests_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MetaWear_MetaWear_macOS_MetaWearUnitTests_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		404057AC209A796300591D6B /* FirmwareTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirmwareTests.swift; sourceTree = "<group>"; };
-		404057B0209A7CB700591D6B /* ManualTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManualTests.swift; sourceTree = "<group>"; };
-		404057B1209A7CB700591D6B /* Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
+		404057B0209A7CB700591D6B /* _UnconvertedTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = _UnconvertedTests.swift; sourceTree = "<group>"; };
 		40405832209A83CA00591D6B /* MetaWearIntegrationTestHost-watchOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MetaWearIntegrationTestHost-watchOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		40405835209A83CA00591D6B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
 		40405837209A83CB00591D6B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -207,13 +215,18 @@
 		69A168E76C9AD014BCBC7055 /* Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS/Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS.debug.xcconfig"; sourceTree = "<group>"; };
 		8469164A5DAB31B6EA449431 /* Pods-MetaWearIntegrationTests-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWearIntegrationTests-macOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWearIntegrationTests-macOS/Pods-MetaWearIntegrationTests-macOS.debug.xcconfig"; sourceTree = "<group>"; };
 		8AECD55451FBEBB8F4A761BF /* Pods_MetaWearIntegrationTests_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MetaWearIntegrationTests_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		9482E577273EE6B400E6FE9D /* MetaWearTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaWearTestCase.swift; sourceTree = "<group>"; };
-		94F1E305274213E000EC0509 /* ManualConnectDisconnectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualConnectDisconnectTests.swift; sourceTree = "<group>"; };
+		940E93B42756DC240023C542 /* CommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandTests.swift; sourceTree = "<group>"; };
+		940E93B82756E1B50023C542 /* _TestState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = _TestState.swift; sourceTree = "<group>"; };
+		940E93BC2756E8390023C542 /* DeviceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTests.swift; sourceTree = "<group>"; };
+		940E93C02756F0B50023C542 /* StreamBMI160Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamBMI160Tests.swift; sourceTree = "<group>"; };
+		940E93C42757139F0023C542 /* DeviceConnectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionTests.swift; sourceTree = "<group>"; };
+		943484E6274F0FE500E51F8D /* _Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = _Helpers.swift; sourceTree = "<group>"; };
+		943484EA274F578C00E51F8D /* LogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTests.swift; sourceTree = "<group>"; };
+		94E8FC06274ADA26005C6EA9 /* StreamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamTests.swift; sourceTree = "<group>"; };
 		98AB2A2F1532F208CC5185D8 /* Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.release.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.release.xcconfig"; sourceTree = "<group>"; };
 		9A48D104D1B7CCF64BA84E3D /* Pods_MetaWear_MetaWear_watchOS_MetaWearIntegrationTestHost_watchOS_Extension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MetaWear_MetaWear_watchOS_MetaWearIntegrationTestHost_watchOS_Extension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D2CC86004B9E8F7F816C2E3 /* Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.debug.xcconfig"; sourceTree = "<group>"; };
 		AB6940A7253774BF00DA83FC /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = LICENSE.md; path = ../LICENSE.md; sourceTree = "<group>"; };
-		ABB5531F25F8316500F36FEC /* LoggingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingTests.swift; sourceTree = "<group>"; };
 		ABBCEAE32679529000E70FAE /* peripherals.rst */ = {isa = PBXFileReference; lastKnownFileType = text; path = peripherals.rst; sourceTree = "<group>"; };
 		ABBCEAE42679529000E70FAE /* magnetometer.rst */ = {isa = PBXFileReference; lastKnownFileType = text; path = magnetometer.rst; sourceTree = "<group>"; };
 		ABBCEAE52679529000E70FAE /* event.rst */ = {isa = PBXFileReference; lastKnownFileType = text; path = event.rst; sourceTree = "<group>"; };
@@ -242,8 +255,7 @@
 		ABBCEAFC2679529200E70FAE /* datasignal.rst */ = {isa = PBXFileReference; lastKnownFileType = text; path = datasignal.rst; sourceTree = "<group>"; };
 		ABBCEAFD2679529300E70FAE /* dataprocessor.rst */ = {isa = PBXFileReference; lastKnownFileType = text; path = dataprocessor.rst; sourceTree = "<group>"; };
 		ABBCEAFE2679529300E70FAE /* sensors.rst */ = {isa = PBXFileReference; lastKnownFileType = text; path = sensors.rst; sourceTree = "<group>"; };
-		ABEEADC225D7580300AD1F88 /* AccelerometerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccelerometerTests.swift; sourceTree = "<group>"; };
-		ABEEADC625D758FF00AD1F88 /* GyroscopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GyroscopeTests.swift; sourceTree = "<group>"; };
+		ABEEADC225D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = _UnconvertedAccelerometerTests.swift; sourceTree = "<group>"; };
 		AD660D07C46FF62D5D8493F0 /* Pods-MetaWear-MetaWear-tvOS-MetaWearIntegrationTestHost-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWear-MetaWear-tvOS-MetaWearIntegrationTestHost-tvOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWear-MetaWear-tvOS-MetaWearIntegrationTestHost-tvOS/Pods-MetaWear-MetaWear-tvOS-MetaWearIntegrationTestHost-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		AE0F4B5B1D12FF6A9AD72AE2 /* Pods_MetaWearIntegrationTests_tvOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MetaWearIntegrationTests_tvOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF8C92E37F4F0E39DD4A3179 /* Pods-MetaWear-MetaWear-tvOS-MetaWearUnitTests-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWear-MetaWear-tvOS-MetaWearUnitTests-tvOS.release.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWear-MetaWear-tvOS-MetaWearUnitTests-tvOS/Pods-MetaWear-MetaWear-tvOS-MetaWearUnitTests-tvOS.release.xcconfig"; sourceTree = "<group>"; };
@@ -446,13 +458,16 @@
 		40703EB01D94C3C100F38FF0 /* Integration */ = {
 			isa = PBXGroup;
 			children = (
-				9482E577273EE6B400E6FE9D /* MetaWearTestCase.swift */,
-				404057B0209A7CB700591D6B /* ManualTests.swift */,
-				94F1E305274213E000EC0509 /* ManualConnectDisconnectTests.swift */,
-				404057B1209A7CB700591D6B /* Tests.swift */,
-				ABEEADC225D7580300AD1F88 /* AccelerometerTests.swift */,
-				ABEEADC625D758FF00AD1F88 /* GyroscopeTests.swift */,
-				ABB5531F25F8316500F36FEC /* LoggingTests.swift */,
+				943484E6274F0FE500E51F8D /* _Helpers.swift */,
+				940E93B82756E1B50023C542 /* _TestState.swift */,
+				940E93B42756DC240023C542 /* CommandTests.swift */,
+				940E93BC2756E8390023C542 /* DeviceTests.swift */,
+				940E93C42757139F0023C542 /* DeviceConnectionTests.swift */,
+				943484EA274F578C00E51F8D /* LogTests.swift */,
+				940E93C02756F0B50023C542 /* StreamBMI160Tests.swift */,
+				94E8FC06274ADA26005C6EA9 /* StreamTests.swift */,
+				ABEEADC225D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift */,
+				404057B0209A7CB700591D6B /* _UnconvertedTests.swift */,
 			);
 			path = Integration;
 			sourceTree = "<group>";
@@ -1104,7 +1119,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS/Pods-MetaWear-MetaWear-macOS-MetaWearUnitTests-macOS-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-DFU-UI-macOS/MetaWear.framework",
+				"${BUILT_PRODUCTS_DIR}/MetaWear-Core-DFU-macOS/MetaWear.framework",
 				"${BUILT_PRODUCTS_DIR}/ZIPFoundation-macOS/ZIPFoundation.framework",
 				"${BUILT_PRODUCTS_DIR}/iOSDFULibrary-macOS/iOSDFULibrary.framework",
 			);
@@ -1144,7 +1159,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-macOS-MetaWearIntegrationTestHost-macOS/Pods-MetaWear-MetaWear-macOS-MetaWearIntegrationTestHost-macOS-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-DFU-UI-macOS/MetaWear.framework",
+				"${BUILT_PRODUCTS_DIR}/MetaWear-Core-DFU-macOS/MetaWear.framework",
 				"${BUILT_PRODUCTS_DIR}/ZIPFoundation-macOS/ZIPFoundation.framework",
 				"${BUILT_PRODUCTS_DIR}/iOSDFULibrary-macOS/iOSDFULibrary.framework",
 			);
@@ -1166,7 +1181,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-iOS-MetaWearIntegrationTestHost-iOS/Pods-MetaWear-MetaWear-iOS-MetaWearIntegrationTestHost-iOS-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-DFU-UI-iOS/MetaWear.framework",
+				"${BUILT_PRODUCTS_DIR}/MetaWear-Core-DFU-iOS/MetaWear.framework",
 				"${BUILT_PRODUCTS_DIR}/ZIPFoundation-iOS/ZIPFoundation.framework",
 				"${BUILT_PRODUCTS_DIR}/iOSDFULibrary-iOS/iOSDFULibrary.framework",
 			);
@@ -1206,7 +1221,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-tvOS-MetaWearIntegrationTestHost-tvOS/Pods-MetaWear-MetaWear-tvOS-MetaWearIntegrationTestHost-tvOS-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-UI-tvOS/MetaWear.framework",
+				"${BUILT_PRODUCTS_DIR}/MetaWear-tvOS/MetaWear.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -1278,7 +1293,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-DFU-UI-iOS/MetaWear.framework",
+				"${BUILT_PRODUCTS_DIR}/MetaWear-Core-DFU-iOS/MetaWear.framework",
 				"${BUILT_PRODUCTS_DIR}/ZIPFoundation-iOS/ZIPFoundation.framework",
 				"${BUILT_PRODUCTS_DIR}/iOSDFULibrary-iOS/iOSDFULibrary.framework",
 			);
@@ -1318,7 +1333,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-watchOS-MetaWearIntegrationTestHost-watchOS Extension/Pods-MetaWear-MetaWear-watchOS-MetaWearIntegrationTestHost-watchOS Extension-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-UI-watchOS/MetaWear.framework",
+				"${BUILT_PRODUCTS_DIR}/MetaWear-watchOS/MetaWear.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -1372,7 +1387,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MetaWear-MetaWear-tvOS-MetaWearUnitTests-tvOS/Pods-MetaWear-MetaWear-tvOS-MetaWearUnitTests-tvOS-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/MetaWear-AsyncUtils-Core-UI-tvOS/MetaWear.framework",
+				"${BUILT_PRODUCTS_DIR}/MetaWear-tvOS/MetaWear.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -1424,13 +1439,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ABB5532025F8316500F36FEC /* LoggingTests.swift in Sources */,
-				ABEEADC325D7580300AD1F88 /* AccelerometerTests.swift in Sources */,
-				ABEEADC725D758FF00AD1F88 /* GyroscopeTests.swift in Sources */,
-				94F1E306274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */,
-				9482E579273EE70400E6FE9D /* MetaWearTestCase.swift in Sources */,
-				4058ABC5211D10A600A50323 /* Tests.swift in Sources */,
-				4058ABC6211D10AA00A50323 /* ManualTests.swift in Sources */,
+				943484EB274F578C00E51F8D /* LogTests.swift in Sources */,
+				940E93C52757139F0023C542 /* DeviceConnectionTests.swift in Sources */,
+				ABEEADC325D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift in Sources */,
+				943484E7274F0FE500E51F8D /* _Helpers.swift in Sources */,
+				94E8FC07274ADA26005C6EA9 /* StreamTests.swift in Sources */,
+				940E93BD2756E8390023C542 /* DeviceTests.swift in Sources */,
+				940E93B92756E1B50023C542 /* _TestState.swift in Sources */,
+				940E93B52756DC240023C542 /* CommandTests.swift in Sources */,
+				940E93C12756F0B50023C542 /* StreamBMI160Tests.swift in Sources */,
+				4058ABC6211D10AA00A50323 /* _UnconvertedTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1455,13 +1473,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ABB5532225F8316500F36FEC /* LoggingTests.swift in Sources */,
-				ABEEADC525D7580300AD1F88 /* AccelerometerTests.swift in Sources */,
-				ABEEADC925D758FF00AD1F88 /* GyroscopeTests.swift in Sources */,
-				94F1E308274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */,
-				9482E57B273EE70900E6FE9D /* MetaWearTestCase.swift in Sources */,
-				404057B4209A7CB700591D6B /* ManualTests.swift in Sources */,
-				404057B7209A7CB700591D6B /* Tests.swift in Sources */,
+				943484ED274F578C00E51F8D /* LogTests.swift in Sources */,
+				940E93C72757139F0023C542 /* DeviceConnectionTests.swift in Sources */,
+				ABEEADC525D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift in Sources */,
+				943484E9274F0FE500E51F8D /* _Helpers.swift in Sources */,
+				94E8FC09274ADA26005C6EA9 /* StreamTests.swift in Sources */,
+				940E93BF2756E8390023C542 /* DeviceTests.swift in Sources */,
+				940E93BB2756E1B50023C542 /* _TestState.swift in Sources */,
+				940E93B72756DC240023C542 /* CommandTests.swift in Sources */,
+				940E93C32756F0B50023C542 /* StreamBMI160Tests.swift in Sources */,
+				404057B4209A7CB700591D6B /* _UnconvertedTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1478,13 +1499,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ABB5532125F8316500F36FEC /* LoggingTests.swift in Sources */,
-				ABEEADC425D7580300AD1F88 /* AccelerometerTests.swift in Sources */,
-				ABEEADC825D758FF00AD1F88 /* GyroscopeTests.swift in Sources */,
-				94F1E307274213E100EC0509 /* ManualConnectDisconnectTests.swift in Sources */,
-				9482E57A273EE70700E6FE9D /* MetaWearTestCase.swift in Sources */,
-				404057B3209A7CB700591D6B /* ManualTests.swift in Sources */,
-				404057B6209A7CB700591D6B /* Tests.swift in Sources */,
+				943484EC274F578C00E51F8D /* LogTests.swift in Sources */,
+				940E93C62757139F0023C542 /* DeviceConnectionTests.swift in Sources */,
+				ABEEADC425D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift in Sources */,
+				943484E8274F0FE500E51F8D /* _Helpers.swift in Sources */,
+				94E8FC08274ADA26005C6EA9 /* StreamTests.swift in Sources */,
+				940E93BE2756E8390023C542 /* DeviceTests.swift in Sources */,
+				940E93BA2756E1B50023C542 /* _TestState.swift in Sources */,
+				940E93B62756DC240023C542 /* CommandTests.swift in Sources */,
+				940E93C22756F0B50023C542 /* StreamBMI160Tests.swift in Sources */,
+				404057B3209A7CB700591D6B /* _UnconvertedTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

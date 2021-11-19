@@ -1,4 +1,4 @@
-////Copyright
+// Copyright 2021 MbientLab Inc. All rights reserved. See LICENSE.MD.
 
 import Foundation
 import MetaWearCpp
@@ -6,24 +6,86 @@ import Combine
 
 // MARK: - Signals
 
-public struct MWThermometer {
+/// Celcius
+public struct MWThermometer: MWReadable {
 
+    /// Celcius
+    public typealias DataType = Float
+    public typealias RawDataType = Float
+    public let columnHeadings = ["Epoch", "Temperature (C)"]
+    public let type: Source
+
+    public var channel: Int
+    /// For external thermistors only. 0 - 5
+    public var dataPin: UInt8 = 0
+    /// For external thermistors only. 0 - 5
+    public var pulldownPin: UInt8 = 0
+
+    public init(type: Source, channel: Int, board: MWBoard) throws {
+        guard Source(board: board, atChannel: channel) == type else {
+            throw MWError.operationFailed("Temperature source unavailable on board or for the specified channel.")
+        }
+        self.type = type
+        self.channel = channel
+    }
+}
+
+public extension MWThermometer {
+
+    func readableSignal(board: MWBoard) throws -> MWDataSignal? {
+        mbl_mw_multi_chnl_temp_get_temperature_data_signal(board, UInt8(channel))
+    }
+
+    func readConfigure(board: MWBoard) {
+        if type == .external {
+            mbl_mw_multi_chnl_temp_configure_ext_thermistor(board, UInt8(channel), dataPin, pulldownPin, UInt8(1))
+        }
+        mbl_mw_baro_bosch_start(board)
+    }
+
+    func readCleanup(board: MWBoard) {
+        mbl_mw_baro_bosch_stop(board)
+    }
 }
 
 // MARK: - Discoverable Presets
 
+public extension MWReadable where Self == MWThermometer {
+
+    static func thermometer(type: MWThermometer.Source, board: MWBoard) throws -> Self {
+        let available = MWThermometer.Source.availableChannels(on: board)
+        guard let i = available.firstIndex(of: type) else {
+            throw MWError.operationFailed("This type of thermometer is not available.")
+        }
+        return try Self(type: type, channel: i, board: board)
+    }
+}
 
 
 // MARK: - C++ Constants
 
 public extension MWThermometer {
 
-    enum MWTemperatureSource: String, CaseIterable, IdentifiableByRawValue {
+    enum Source: String, CaseIterable, IdentifiableByRawValue {
         case onDie
         case external
         case bmp280
         case onboard
         case custom
+
+        public static func availableChannels(on board: MWBoard) -> [Source] {
+            var channels = [Source]()
+            let maxChannels = mbl_mw_multi_chnl_temp_get_num_channels(board)
+            for i in 0..<maxChannels {
+                channels.append(Self.init(board: board, atChannel: Int(i)))
+            }
+            return channels
+        }
+
+        public init(board: MWBoard, atChannel: Int) {
+            let source = mbl_mw_multi_chnl_temp_get_source(board, UInt8(atChannel))
+            self.init(cpp: source)
+        }
 
         public init(cpp: MblMwTemperatureSource) {
             self = Self.allCases.first(where: { $0.cppValue == cpp }) ?? .custom

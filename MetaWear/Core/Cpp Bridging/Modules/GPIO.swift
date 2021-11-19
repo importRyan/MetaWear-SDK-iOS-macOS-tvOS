@@ -1,4 +1,4 @@
-////Copyright
+// Copyright 2021 MbientLab Inc. All rights reserved. See LICENSE.MD.
 
 import Foundation
 import MetaWearCpp
@@ -6,12 +6,7 @@ import Combine
 
 // MARK: - Signals
 
-public struct _MWGPIO {
-    
-}
-
-// MARK: - Discoverable Presets
-
+public struct _MWGPIO {}
 
 
 // MARK: - C++ Constants
