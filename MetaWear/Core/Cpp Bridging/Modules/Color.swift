@@ -88,7 +88,6 @@ public extension MWColorDetector {
         }
     }
 
-    #warning("How was Stephen deriving these numbers? Doesn't add up to integration by channel for promized Hz")
     enum PresetFrequency: Float, CaseIterable, IdentifiableByRawValue {
         case hz1   = 614.4
         case hz25  = 36

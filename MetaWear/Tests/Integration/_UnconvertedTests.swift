@@ -194,7 +194,6 @@ class ManualTests: XCTestCase, MetaWearTestCase {
         }
     }
 
-#warning("What is this?")
     func testUserMacro() throws {
         try _wait(forVisualInspection: 60) { device, exp, subs in
             exp.isInverted = false

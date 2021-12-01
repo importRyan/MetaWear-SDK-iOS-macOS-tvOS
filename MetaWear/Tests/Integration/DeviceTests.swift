@@ -16,7 +16,6 @@ class DeviceTests: XCTestCase {
 
     // MARK: - Reset
 
-#warning("How can I force the logger id to increment?")
     func test_FactoryReset() {
         connectNearbyMetaWear(timeout: .download) { metawear, exp, subs in
             var lastReset = Date()

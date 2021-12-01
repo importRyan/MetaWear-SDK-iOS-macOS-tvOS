@@ -365,7 +365,6 @@ extension MWAccelerometer {
         }
     }
 
-    #warning("Verify")
     /// Supported only by BMI160
     public enum Orientation: String, CaseIterable, IdentifiableByRawValue {
         case faceUpPortraitUpright
