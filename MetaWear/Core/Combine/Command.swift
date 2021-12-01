@@ -4,21 +4,22 @@ import Foundation
 import Combine
 import MetaWearCpp
 
-public extension Publisher where Output == MetaWear, Failure == MWError {
+public extension Publisher where Output == MetaWear {
 
     /// Completes upon issuing the command to the MetaWear (on the `apiAccessQueue`)
     /// - Returns: MetaWear
     ///
     func command<C: MWCommand>(_ command: C) -> MWPublisher<MetaWear> {
-        flatMap { metaWear -> MWPublisher<MetaWear> in
-            Just(metaWear)
-                .setFailureType(to: MWError.self)
-                .handleEvents(receiveOutput: { metaWear in
-                    command.command(board: metaWear.board)
-                })
-                .erase(subscribeOn: metaWear.apiAccessQueue)
-        }
-        .eraseToAnyPublisher()
+        mapToMetaWearError()
+            .flatMap { metaWear -> MWPublisher<MetaWear> in
+                Just(metaWear)
+                    .setFailureType(to: MWError.self)
+                    .handleEvents(receiveOutput: { metaWear in
+                        command.command(board: metaWear.board)
+                    })
+                    .erase(subscribeOn: metaWear.apiAccessQueue)
+            }
+            .eraseToAnyPublisher()
     }
 }
 

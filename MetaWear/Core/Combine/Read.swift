@@ -7,7 +7,7 @@ import MetaWearCpp
 
 // MARK: - Read Once
 
-public extension Publisher where Output == MetaWear, Failure == MWError {
+public extension Publisher where Output == MetaWear {
 
     /// Performs a one-time read of a board signal, handling C++ library calls, pointer bridging, and returned data type casting.
     ///
@@ -17,23 +17,24 @@ public extension Publisher where Output == MetaWear, Failure == MWError {
     /// - Returns: Pipeline on the BLE queue with the cast data. Fails if not connected.
     ///
     func read<R: MWReadable>(signal: R) -> MWPublisher<Timestamped<R.DataType>> {
-        flatMap { metawear -> MWPublisher<Timestamped<R.DataType>> in
-            do {
-                guard let signalPointer = try signal.readableSignal(board: metawear.board)
-                else { throw MWError.operationFailed("Board unavailable for \(signal.name).") }
+        mapToMetaWearError()
+            .flatMap { metawear -> MWPublisher<Timestamped<R.DataType>> in
+                do {
+                    guard let signalPointer = try signal.readableSignal(board: metawear.board)
+                    else { throw MWError.operationFailed("Board unavailable for \(signal.name).") }
 
-                return signalPointer
-                    .read(signal)
-                    .mapError { _ in // Replace any unspecific type casting failure message
-                        MWError.operationFailed("Failed reading \(signal.name).")
-                    }
-                    .erase(subscribeOn: metawear.apiAccessQueue)
+                    return signalPointer
+                        .read(signal)
+                        .mapError { _ in // Replace any unspecific type casting failure message
+                            MWError.operationFailed("Failed reading \(signal.name).")
+                        }
+                        .erase(subscribeOn: metawear.apiAccessQueue)
 
-            } catch {
-                return Fail(outputType: Timestamped<R.DataType>.self, failure: error).mapToMetaWearError()
+                } catch {
+                    return Fail(outputType: Timestamped<R.DataType>.self, failure: error).mapToMetaWearError()
+                }
             }
-        }
-        .eraseToAnyPublisher()
+            .eraseToAnyPublisher()
     }
 
     /// Performs a one-time read of a board signal, handling pointer bridging, and casting to the provided type.
@@ -45,12 +46,13 @@ public extension Publisher where Output == MetaWear, Failure == MWError {
     /// - Returns: Pipeline on the BLE queue with the cast data. Fails if not connected.
     ///
     func read<T>(signal: OpaquePointer, as type: T.Type) -> MWPublisher<Timestamped<T>> {
-        flatMap { metawear in
-            metawear.board
-                .read(as: T.self)
-                .erase(subscribeOn: metawear.apiAccessQueue)
-        }
-        .eraseToAnyPublisher()
+        mapToMetaWearError()
+            .flatMap { metawear in
+                metawear.board
+                    .read(as: T.self)
+                    .erase(subscribeOn: metawear.apiAccessQueue)
+            }
+            .eraseToAnyPublisher()
     }
 }
 
