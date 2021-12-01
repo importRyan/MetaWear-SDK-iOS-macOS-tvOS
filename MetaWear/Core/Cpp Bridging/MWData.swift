@@ -14,9 +14,28 @@ public struct MWData {
     let typeId: MblMwDataTypeId
     
     public func valueAs<T>() -> T {
-        doTheParse(length: UInt8(data.count), type_id: typeId, value: UnsafeRawPointer(data))
+        withUnsafePointer(to: data) { p -> T in
+            cast(length: UInt8(data.endIndex), type_id: typeId, value: UnsafeRawPointer(p))
+        }
     }
 }
+
+// MARK: - Log Wrapper
+
+public extension MWData {
+
+    struct LogDownload {
+        public let logger: MWLogger
+        public let data: [MWData]
+
+        public init(logger: MWLogger, data: [MWData]) {
+            self.logger = logger
+            self.data = data
+        }
+    }
+}
+
+// MARK: - Move from C++
 
 extension MblMwData {
     public func copy() -> MWData {
@@ -31,14 +50,16 @@ extension MblMwData {
         return Calendar.current.date(byAdding: .nanosecond, value: Int(milliseconds), to: date)!
     }
     public func valueAs<T>() -> T {
-        doTheParse(length: length, type_id: type_id, value: value)
+        cast(length: length, type_id: type_id, value: value)
     }
     public func extraAs<T>() -> T {
         extra.bindMemory(to: T.self, capacity: 1).pointee
     }
 }
 
-fileprivate func doTheParse<T>(length: UInt8, type_id: MblMwDataTypeId, value: UnsafeRawPointer) -> T {
+// MARK: - Cast
+
+fileprivate func cast<T>(length: UInt8, type_id: MblMwDataTypeId, value: UnsafeRawPointer) -> T {
     guard type_id != MBL_MW_DT_ID_STRING else {
         assert(T.self == String.self || T.self == String?.self)
         return String(cString: value.assumingMemoryBound(to: CChar.self)) as! T
@@ -57,56 +78,29 @@ fileprivate func doTheParse<T>(length: UInt8, type_id: MblMwDataTypeId, value: U
     }
     // Generalized flow
     assert(MemoryLayout<T>.size == length)
-    switch type_id {
-    case MBL_MW_DT_ID_UINT32:
-        assert(T.self == UInt32.self)
-    case MBL_MW_DT_ID_FLOAT:
-        assert(T.self == Float.self)
-    case MBL_MW_DT_ID_CARTESIAN_FLOAT:
-        assert(T.self == MblMwCartesianFloat.self)
-    case MBL_MW_DT_ID_INT32:
-        assert(T.self == Int32.self)
-    case MBL_MW_DT_ID_BATTERY_STATE:
-        assert(T.self == MblMwBatteryState.self)
-    case MBL_MW_DT_ID_TCS34725_ADC:
-        assert(T.self == MblMwTcs34725ColorAdc.self)
-    case MBL_MW_DT_ID_EULER_ANGLE:
-        assert(T.self == MblMwEulerAngles.self)
-    case MBL_MW_DT_ID_QUATERNION:
-        assert(T.self == MblMwQuaternion.self)
-    case MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT:
-        assert(T.self == MblMwCorrectedCartesianFloat.self)
-    case MBL_MW_DT_ID_OVERFLOW_STATE:
-        assert(T.self == MblMwOverflowState.self)
-    case MBL_MW_DT_ID_SENSOR_ORIENTATION:
-        assert(T.self == MblMwSensorOrientation.self)
-    case MBL_MW_DT_ID_LOGGING_TIME:
-        assert(T.self == MblMwLoggingTime.self)
-    case MBL_MW_DT_ID_BTLE_ADDRESS:
-        assert(T.self == MblMwBtleAddress.self)
-    case MBL_MW_DT_ID_BOSCH_ANY_MOTION:
-        assert(T.self == MblMwBoschAnyMotion.self)
-    case MBL_MW_DT_ID_BOSCH_GESTURE:
-        assert(T.self == MblMwBoschGestureType.self)
-    case MBL_MW_DT_ID_CALIBRATION_STATE:
-        assert(T.self == MblMwCalibrationState.self)
-    case MBL_MW_DT_ID_BOSCH_TAP:
-        assert(T.self == MblMwBoschTap.self)
-    default:
-        fatalError("unknown data type")
-    }
+    assertMatching(T.self, type_id)
     return value.bindMemory(to: T.self, capacity: 1).pointee
 }
 
-public extension MWData {
-
-    struct LogDownload {
-        public let logger: MWLogger
-        public let data: [MWData]
-
-        public init(logger: MWLogger, data: [MWData]) {
-            self.logger = logger
-            self.data = data
-        }
+fileprivate func assertMatching<T>(_ type: T.Type, _ id: MblMwDataTypeId) {
+    switch id {
+        case MBL_MW_DT_ID_UINT32:                    assert(T.self == UInt32.self)
+        case MBL_MW_DT_ID_FLOAT:                     assert(T.self == Float.self)
+        case MBL_MW_DT_ID_CARTESIAN_FLOAT:           assert(T.self == MblMwCartesianFloat.self)
+        case MBL_MW_DT_ID_INT32:                     assert(T.self == Int32.self)
+        case MBL_MW_DT_ID_BATTERY_STATE:             assert(T.self == MblMwBatteryState.self)
+        case MBL_MW_DT_ID_TCS34725_ADC:              assert(T.self == MblMwTcs34725ColorAdc.self)
+        case MBL_MW_DT_ID_EULER_ANGLE:               assert(T.self == MblMwEulerAngles.self)
+        case MBL_MW_DT_ID_QUATERNION:                assert(T.self == MblMwQuaternion.self)
+        case MBL_MW_DT_ID_CORRECTED_CARTESIAN_FLOAT: assert(T.self == MblMwCorrectedCartesianFloat.self)
+        case MBL_MW_DT_ID_OVERFLOW_STATE:            assert(T.self == MblMwOverflowState.self)
+        case MBL_MW_DT_ID_SENSOR_ORIENTATION:        assert(T.self == MblMwSensorOrientation.self)
+        case MBL_MW_DT_ID_LOGGING_TIME:              assert(T.self == MblMwLoggingTime.self)
+        case MBL_MW_DT_ID_BTLE_ADDRESS:              assert(T.self == MblMwBtleAddress.self)
+        case MBL_MW_DT_ID_BOSCH_ANY_MOTION:          assert(T.self == MblMwBoschAnyMotion.self)
+        case MBL_MW_DT_ID_BOSCH_GESTURE:             assert(T.self == MblMwBoschGestureType.self)
+        case MBL_MW_DT_ID_CALIBRATION_STATE:         assert(T.self == MblMwCalibrationState.self)
+        case MBL_MW_DT_ID_BOSCH_TAP:                 assert(T.self == MblMwBoschTap.self)
+        default: fatalError("unknown data type")
     }
 }

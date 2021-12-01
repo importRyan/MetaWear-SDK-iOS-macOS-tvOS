@@ -239,23 +239,23 @@ public extension MWDataSignalOrBoard {
         return subject.erasedWithDataProcessorError(code: code)
     }
 
-    /// Combine interface for `mbl_mw_dataprocessor_fuser_create`
-    ///
-    func fuserCreate(with: OpaquePointer) -> AnyPublisher<MWDataProcessorSignal, MWError> {
-        let subject = _MWDataProcessorSubject()
-        var array: [OpaquePointer?] = [with]
-        let code = mbl_mw_dataprocessor_fuser_create(self, UnsafeMutablePointer(&array), 1,  bridge(obj: subject)) { (context, delta) in
-            let _subject: _MWDataProcessorSubject = bridge(ptr: context!)
+    func fuserCreate(with: OpaquePointer?) -> AnyPublisher<MWDataProcessorSignal, MWError> {
+        withUnsafePointer(to: with) { w in
+            let mutable = UnsafeMutablePointer<OpaquePointer?>(mutating: w)
+            let subject = _MWDataProcessorSubject()
 
-            if let delta = delta {
-                _subject.send(delta)
-            } else {
-                _subject.send(completion: .failure(.operationFailed("could not create fuser")))
+            let code = mbl_mw_dataprocessor_fuser_create(self, mutable, 1,  bridge(obj: subject)) { (context, delta) in
+                let _subject: _MWDataProcessorSubject = bridge(ptr: context!)
+
+                if let delta = delta {
+                    _subject.send(delta)
+                } else {
+                    _subject.send(completion: .failure(.operationFailed("could not create fuser")))
+                }
             }
+            return subject.erasedWithDataProcessorError(code: code)
         }
-        return subject.erasedWithDataProcessorError(code: code)
     }
-
 }
 
 // MARK: - Helpers
