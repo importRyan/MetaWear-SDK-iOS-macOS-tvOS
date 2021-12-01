@@ -25,7 +25,7 @@ public enum MWLogger: Equatable, Hashable {
     public var name: String {
         switch self {
             case .acceleration: return "acceleration"
-            case .altitude: return "pressure"
+            case .altitude: return "altitude"
             case .color: return "color"
             case .eulerAngles: return "euler-angles"
             case .gravity: return "gravity"

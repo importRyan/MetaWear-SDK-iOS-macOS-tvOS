@@ -16,6 +16,13 @@ class DeviceTests: XCTestCase {
 
     // MARK: - Reset
 
+    func test_QuickDebugReset() {
+        connectNearbyMetaWear(timeout: .download) { metawear, exp, subs in
+            metawear.resetToFactoryDefaults()
+            exp.fulfill()
+        }
+    }
+
     func test_FactoryReset() {
         connectNearbyMetaWear(timeout: .download) { metawear, exp, subs in
             var lastReset = Date()

@@ -72,6 +72,9 @@
 		943484EB274F578C00E51F8D /* LogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943484EA274F578C00E51F8D /* LogTests.swift */; };
 		943484EC274F578C00E51F8D /* LogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943484EA274F578C00E51F8D /* LogTests.swift */; };
 		943484ED274F578C00E51F8D /* LogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 943484EA274F578C00E51F8D /* LogTests.swift */; };
+		94D0185C2757FFE40036E8FD /* ReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D0185B2757FFE40036E8FD /* ReadTests.swift */; };
+		94D0185D2757FFE40036E8FD /* ReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D0185B2757FFE40036E8FD /* ReadTests.swift */; };
+		94D0185E2757FFE40036E8FD /* ReadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D0185B2757FFE40036E8FD /* ReadTests.swift */; };
 		94E8FC07274ADA26005C6EA9 /* StreamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E8FC06274ADA26005C6EA9 /* StreamTests.swift */; };
 		94E8FC08274ADA26005C6EA9 /* StreamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E8FC06274ADA26005C6EA9 /* StreamTests.swift */; };
 		94E8FC09274ADA26005C6EA9 /* StreamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94E8FC06274ADA26005C6EA9 /* StreamTests.swift */; };
@@ -222,6 +225,7 @@
 		940E93C42757139F0023C542 /* DeviceConnectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionTests.swift; sourceTree = "<group>"; };
 		943484E6274F0FE500E51F8D /* _Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = _Helpers.swift; sourceTree = "<group>"; };
 		943484EA274F578C00E51F8D /* LogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTests.swift; sourceTree = "<group>"; };
+		94D0185B2757FFE40036E8FD /* ReadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTests.swift; sourceTree = "<group>"; };
 		94E8FC06274ADA26005C6EA9 /* StreamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamTests.swift; sourceTree = "<group>"; };
 		98AB2A2F1532F208CC5185D8 /* Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.release.xcconfig"; path = "Pods/Target Support Files/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS/Pods-MetaWear-MetaWear-iOS-MetaWearUnitTests-iOS.release.xcconfig"; sourceTree = "<group>"; };
 		9A48D104D1B7CCF64BA84E3D /* Pods_MetaWear_MetaWear_watchOS_MetaWearIntegrationTestHost_watchOS_Extension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MetaWear_MetaWear_watchOS_MetaWearIntegrationTestHost_watchOS_Extension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -468,6 +472,7 @@
 				94E8FC06274ADA26005C6EA9 /* StreamTests.swift */,
 				ABEEADC225D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift */,
 				404057B0209A7CB700591D6B /* _UnconvertedTests.swift */,
+				94D0185B2757FFE40036E8FD /* ReadTests.swift */,
 			);
 			path = Integration;
 			sourceTree = "<group>";
@@ -1443,6 +1448,7 @@
 				940E93C52757139F0023C542 /* DeviceConnectionTests.swift in Sources */,
 				ABEEADC325D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift in Sources */,
 				943484E7274F0FE500E51F8D /* _Helpers.swift in Sources */,
+				94D0185C2757FFE40036E8FD /* ReadTests.swift in Sources */,
 				94E8FC07274ADA26005C6EA9 /* StreamTests.swift in Sources */,
 				940E93BD2756E8390023C542 /* DeviceTests.swift in Sources */,
 				940E93B92756E1B50023C542 /* _TestState.swift in Sources */,
@@ -1477,6 +1483,7 @@
 				940E93C72757139F0023C542 /* DeviceConnectionTests.swift in Sources */,
 				ABEEADC525D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift in Sources */,
 				943484E9274F0FE500E51F8D /* _Helpers.swift in Sources */,
+				94D0185E2757FFE40036E8FD /* ReadTests.swift in Sources */,
 				94E8FC09274ADA26005C6EA9 /* StreamTests.swift in Sources */,
 				940E93BF2756E8390023C542 /* DeviceTests.swift in Sources */,
 				940E93BB2756E1B50023C542 /* _TestState.swift in Sources */,
@@ -1503,6 +1510,7 @@
 				940E93C62757139F0023C542 /* DeviceConnectionTests.swift in Sources */,
 				ABEEADC425D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift in Sources */,
 				943484E8274F0FE500E51F8D /* _Helpers.swift in Sources */,
+				94D0185D2757FFE40036E8FD /* ReadTests.swift in Sources */,
 				94E8FC08274ADA26005C6EA9 /* StreamTests.swift in Sources */,
 				940E93BE2756E8390023C542 /* DeviceTests.swift in Sources */,
 				940E93BA2756E1B50023C542 /* _TestState.swift in Sources */,

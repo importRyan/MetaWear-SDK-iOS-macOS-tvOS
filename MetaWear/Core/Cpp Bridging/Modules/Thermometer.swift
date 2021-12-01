@@ -7,13 +7,15 @@ import Combine
 // MARK: - Signals
 
 /// Celcius
-public struct MWThermometer: MWReadable {
+public struct MWThermometer: MWReadable, MWPollable {
+
 
     /// Celcius
     public typealias DataType = Float
     public typealias RawDataType = Float
     public let columnHeadings = ["Epoch", "Temperature (C)"]
     public let type: Source
+    public var pollingRate: TimeInterval
 
     public var channel: Int
     /// For external thermistors only. 0 - 5
@@ -21,30 +23,48 @@ public struct MWThermometer: MWReadable {
     /// For external thermistors only. 0 - 5
     public var pulldownPin: UInt8 = 0
 
-    public init(type: Source, channel: Int, board: MWBoard) throws {
+    public init(type: Source, channel: Int, board: MWBoard, pollsPerSecond: TimeInterval) throws {
         guard Source(board: board, atChannel: channel) == type else {
-            throw MWError.operationFailed("Temperature source unavailable on board or for the specified channel.")
+            throw MWError.operationFailed("\(type.displayName) unavailable at the specified channel.")
         }
         self.type = type
         self.channel = channel
+        self.pollingRate = pollsPerSecond
+    }
+
+    public init(type: Source, board: MWBoard, pollsPerSecond: TimeInterval) throws {
+        let available = MWThermometer.Source.availableChannels(on: board)
+        guard let i = available.firstIndex(of: type) else {
+            throw MWError.operationFailed("\(type.displayName) is not available.")
+        }
+        self.type = type
+        self.channel = i
+        self.pollingRate = pollsPerSecond
     }
 }
 
 public extension MWThermometer {
 
     func readableSignal(board: MWBoard) throws -> MWDataSignal? {
-        mbl_mw_multi_chnl_temp_get_temperature_data_signal(board, UInt8(channel))
+        debugPrinter(p: type.displayName + String(channel))
+        return mbl_mw_multi_chnl_temp_get_temperature_data_signal(board, UInt8(channel))
     }
 
     func readConfigure(board: MWBoard) {
         if type == .external {
             mbl_mw_multi_chnl_temp_configure_ext_thermistor(board, UInt8(channel), dataPin, pulldownPin, UInt8(1))
         }
-        mbl_mw_baro_bosch_start(board)
+        if type == .bmp280 {
+            mbl_mw_baro_bosch_start(board)
+        }
+        debugPrinter(p: "Configured \(type.displayName) \(channel)")
     }
 
     func readCleanup(board: MWBoard) {
-        mbl_mw_baro_bosch_stop(board)
+        if type == .bmp280 {
+            mbl_mw_baro_bosch_stop(board)
+        }
+        debugPrinter(p: "Done \(type.displayName)")
     }
 }
 
@@ -52,12 +72,25 @@ public extension MWThermometer {
 
 public extension MWReadable where Self == MWThermometer {
 
-    static func thermometer(type: MWThermometer.Source, board: MWBoard) throws -> Self {
+    static func thermometer(type: MWThermometer.Source = .onboard, board: MWBoard) throws -> Self {
         let available = MWThermometer.Source.availableChannels(on: board)
+        debugPrinter(p: "\(available.count) \(available.map { $0.displayName} )")
         guard let i = available.firstIndex(of: type) else {
-            throw MWError.operationFailed("This type of thermometer is not available.")
+            throw MWError.operationFailed("\(type.displayName) is not available.")
         }
-        return try Self(type: type, channel: i, board: board)
+        return try Self(type: type, channel: i, board: board, pollsPerSecond: 1)
+    }
+}
+
+public extension MWPollable where Self == MWThermometer {
+
+    static func thermometer(type: MWThermometer.Source = .onboard, board: MWBoard, pollsPerSecond: Double) throws -> Self {
+        let available = MWThermometer.Source.availableChannels(on: board)
+        debugPrinter(p: "\(available.count) \(available.map { $0.displayName} )")
+        guard let i = available.firstIndex(of: type) else {
+            throw MWError.operationFailed("\(type.displayName) is not available.")
+        }
+        return try Self(type: type, channel: i, board: board, pollsPerSecond: pollsPerSecond)
     }
 }
 

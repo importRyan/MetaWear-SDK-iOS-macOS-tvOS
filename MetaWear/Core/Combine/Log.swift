@@ -37,23 +37,23 @@ public extension Publisher where Output == MetaWear, Failure == MWError {
             .eraseToAnyPublisher()
     }
 
-    /// Starts logging a preset sensor configuration that requires a timer.
-    /// - Returns: The conencted MetaWear or an error if the timer or logging setup fails.
-    ///
-    func log<P: MWPollable>(_ pollable: P, overwriting: Bool = false) -> MWPublisher<MetaWear> {
-        _setupPollableAndTimer(pollable)
-            ._setupPollableEvent()
-            .flatMap { metawear, sensor, timer -> MWPublisher<MetaWear> in
-                let errorMsg = MWError.operationFailed("Unable to log \(pollable.name)")
-                let start = { mbl_mw_timer_start(timer) }
-                return sensor
-                    .log(board: metawear.board, overwriting: overwriting, start: start)
-                    .compactMap { [weak metawear] _ in metawear }
-                    .mapError { _ in errorMsg }
-                    .erase(subscribeOn: metawear.apiAccessQueue)
-            }
-            .eraseToAnyPublisher()
-    }
+//    /// Starts logging a preset sensor configuration that requires a timer.
+//    /// - Returns: The conencted MetaWear or an error if the timer or logging setup fails.
+//    ///
+//    func log<P: MWPollable>(_ pollable: P, overwriting: Bool = false) -> MWPublisher<MetaWear> {
+//        _setupPollableAndTimer(pollable)
+//            ._setupPollableEvent()
+//            .flatMap { metawear, sensor, timer -> MWPublisher<MetaWear> in
+//                let errorMsg = MWError.operationFailed("Unable to log \(pollable.name)")
+//                let start = { mbl_mw_timer_start(timer) }
+//                return sensor
+//                    .log(board: metawear.board, overwriting: overwriting, start: start)
+//                    .compactMap { [weak metawear] _ in metawear }
+//                    .mapError { _ in errorMsg }
+//                    .erase(subscribeOn: metawear.apiAccessQueue)
+//            }
+//            .eraseToAnyPublisher()
+//    }
 }
 
 // MARK: - Download Logs

@@ -37,6 +37,45 @@ class StreamTests: XCTestCase {
         _testStream(.magnetometer(freq: .hz15))
     }
 
+    // MARK: - Pollables
+
+    func testStreamPoll_Temperature() throws {
+        connectNearbyMetaWear(timeout: .download, useLogger: true) { metawear, exp, subs in
+            var dataCount = 0
+            var sub: AnyCancellable? = nil
+//            let sut: some MWPollable = try .thermometer(type: .onboard, board: metawear.board, pollsPerSecond: 2)
+            let sut: some MWPollable = try .thermometer(type: .bmp280, board: metawear.board, pollsPerSecond: 2)
+            sub = metawear
+                .publish()
+                .stream(sut)
+                .sink { completion in
+                    Swift.print("Completion!")
+                    guard case let .failure(error) = completion else { return }
+                    XCTFail(error.localizedDescription)
+                } receiveValue: { _, value in
+                    dataCount += 1
+                    Swift.print("Polled", dataCount, value)
+
+                    if dataCount == 5 {
+                        sub?.cancel()
+                        exp.fulfill()
+                    }
+                }
+        }
+    }
+
+    func testStreamPoll_Humidity() {
+        _testPoll(.humidity(oversampling: .x1, pollingRate: 2))
+    }
+
+    func testStreamPoll_ColorDetector() {
+        _testPoll(.colorDetector(gain: .x1))
+    }
+
+    func testStreamPoll_Proximity() {
+        _testPoll(.proximity(pollingRate: 2, sensitivity: .init(5), current: .mA100))
+    }
+
     // MARK: - Sensor Fusion All Modes
 
     func testStream_SensorFusion_EulerAngles() {
@@ -59,6 +98,29 @@ class StreamTests: XCTestCase {
 // MARK: - Helpers
 
 extension XCTestCase {
+
+    func _testPoll<P: MWPollable>(_ sut: P, timeout: TimeInterval = .read) {
+        connectNearbyMetaWear(timeout: timeout, useLogger: false) { metawear, exp, subs in
+            var dataCount = 0
+            var sub: AnyCancellable? = nil
+
+            sub = metawear
+                .publish()
+                .stream(sut)
+                .sink { completion in
+                    guard case let .failure(error) = completion else { return }
+                    XCTFail(error.localizedDescription)
+                } receiveValue: { _, value in
+                    dataCount += 1
+                    Swift.print("Polled", dataCount, value)
+
+                    if dataCount == 5 {
+                        sub?.cancel()
+                        exp.fulfill()
+                    }
+                }
+        }
+    }
 
     func _testStream<S: MWStreamable>(_ sut: S, timeout: TimeInterval = .read) {
         connectNearbyMetaWear(timeout: timeout, useLogger: false) { metawear, exp, subs in

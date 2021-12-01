@@ -19,6 +19,7 @@ public func _datasignal_subscribe(_ signal: OpaquePointer) -> MWDataSubject {
     mbl_mw_datasignal_subscribe(signal, bridge(obj: dataStream)) { context, dataPtr in
         let _subject: MWDataSubject = bridge(ptr: context!)
         if let data = dataPtr {
+            debugPrinter(p: "Received value")
             _subject.send(data.pointee.copy())
         } else {
             let error = MWError.operationFailed("Could not subscribe")
@@ -105,10 +106,3 @@ public extension Dictionary where Key == MWLogger, Value == CurrentValueSubject<
         }
     }
 }
-//
-//Cannot convert value of type
-//'(OpaquePointer?, UnsafeMutableRawPointer?, MblMwFnDataProcessor?) -> Int32'
-//
-//(aka '(Optional<OpaquePointer>, Optional<UnsafeMutableRawPointer>, Optional<@convention(c) (Optional<UnsafeMutableRawPointer>, Optional<OpaquePointer>) -> ()>) -> Int32')
-//
-//to expected argument type '(OpaquePointer, UnsafeMutableRawPointer, @convention(c) (UnsafeMutableRawPointer?, OpaquePointer?) -> Void) -> Int32'
