@@ -74,3 +74,9 @@ internal extension MetaWear {
         .erase(subscribeOn: self.apiAccessQueue)
     }
 }
+
+
+func debugPrinter(f: String = #function, line: UInt = #line, p: String) {
+    print("")
+    print(f, line, p)
+}
