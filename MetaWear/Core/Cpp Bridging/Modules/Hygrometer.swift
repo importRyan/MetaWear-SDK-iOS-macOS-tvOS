@@ -14,11 +14,11 @@ public struct MWHumidity: MWPollable, MWReadable {
     public var loggerName: MWLogger = .humidity
 
     public var oversampling: Oversampling? = nil
-    public var pollingRate: TimeInterval
+    public var pollingRate: MWFrequency
 
-    public init(oversampling: MWHumidity.Oversampling? = nil, pollingRate: TimeInterval = 1) {
+    public init(oversampling: MWHumidity.Oversampling? = nil, rate: MWFrequency) {
         self.oversampling = oversampling
-        self.pollingRate = pollingRate
+        self.pollingRate = rate
     }
 }
 
@@ -40,14 +40,14 @@ public extension MWHumidity {
 // MARK: - Discoverable Presets
 
 public extension MWPollable where Self == MWHumidity {
-    static func humidity(oversampling: MWHumidity.Oversampling? = nil, pollingRate: TimeInterval = 1) -> Self {
-        Self(oversampling: oversampling, pollingRate: pollingRate)
+    static func humidity(oversampling: MWHumidity.Oversampling? = nil, rate: MWFrequency) -> Self {
+        Self(oversampling: oversampling, rate: rate)
     }
 }
 
 public extension MWReadable where Self == MWHumidity {
     static func humidity(oversampling: MWHumidity.Oversampling? = nil) -> Self {
-        Self(oversampling: oversampling)
+        Self(oversampling: oversampling, rate: .init(eventsPerSecond: 1))
     }
 }
 

@@ -468,11 +468,11 @@
 				940E93BC2756E8390023C542 /* DeviceTests.swift */,
 				940E93C42757139F0023C542 /* DeviceConnectionTests.swift */,
 				943484EA274F578C00E51F8D /* LogTests.swift */,
+				94D0185B2757FFE40036E8FD /* ReadTests.swift */,
 				940E93C02756F0B50023C542 /* StreamBMI160Tests.swift */,
 				94E8FC06274ADA26005C6EA9 /* StreamTests.swift */,
 				ABEEADC225D7580300AD1F88 /* _UnconvertedAccelerometerTests.swift */,
 				404057B0209A7CB700591D6B /* _UnconvertedTests.swift */,
-				94D0185B2757FFE40036E8FD /* ReadTests.swift */,
 			);
 			path = Integration;
 			sourceTree = "<group>";

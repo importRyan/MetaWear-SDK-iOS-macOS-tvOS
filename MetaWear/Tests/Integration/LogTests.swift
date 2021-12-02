@@ -75,7 +75,7 @@ class LogTests: XCTestCase {
                 .delay(for: 1, tolerance: 0, scheduler: metawear.apiAccessQueue)
 
             // Act
-                .read(signal: .logLength)
+                .read(.logLength)
 
             // Assert
                 ._sinkNoFailure(&subs, receiveValue: {
@@ -98,7 +98,7 @@ class LogTests: XCTestCase {
                 .delay(for: 10, tolerance: 0, scheduler: metawear.apiAccessQueue)
 
             // Act
-                .read(signal: .logLength)
+                .read(.logLength)
 
             // Assert
                 ._sinkNoFailure(&subs, receiveValue: {

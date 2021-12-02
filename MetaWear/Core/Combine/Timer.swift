@@ -54,8 +54,7 @@ public extension Publisher where Output == MetaWear {
 
         mapToMetaWearError()
             .flatMap { device -> MWPublisher<OpaquePointer> in
-                debugPrinter(p: "Made publisher from board")
-                return device.board
+                device.board
                     .createTimer(period: periodMs, repetitions: repetitions, immediateFire: immediateFire)
                     .erase(subscribeOn: device.apiAccessQueue)
             }

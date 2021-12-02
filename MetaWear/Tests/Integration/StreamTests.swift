@@ -10,7 +10,7 @@ class StreamTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        TestDevices.useOnly(.S_A4)
+        TestDevices.useOnly(.RL_BE)
     }
 
     func testStream_Accelerometer() {
@@ -40,40 +40,28 @@ class StreamTests: XCTestCase {
     // MARK: - Pollables
 
     func testStreamPoll_Temperature() throws {
-        connectNearbyMetaWear(timeout: .download, useLogger: true) { metawear, exp, subs in
-            var dataCount = 0
-            var sub: AnyCancellable? = nil
-//            let sut: some MWPollable = try .thermometer(type: .onboard, board: metawear.board, pollsPerSecond: 2)
-            let sut: some MWPollable = try .thermometer(type: .bmp280, board: metawear.board, pollsPerSecond: 2)
-            sub = metawear
-                .publish()
-                .stream(sut)
-                .sink { completion in
-                    Swift.print("Completion!")
-                    guard case let .failure(error) = completion else { return }
-                    XCTFail(error.localizedDescription)
-                } receiveValue: { _, value in
-                    dataCount += 1
-                    Swift.print("Polled", dataCount, value)
-
-                    if dataCount == 5 {
-                        sub?.cancel()
-                        exp.fulfill()
-                    }
-                }
+        try _testPoll { metawear in
+            try [MWThermometer.Source.onboard, .bmp280, .onDie, .external]
+                .map { try .thermometer(type: $0, board: metawear.board, rate: .init(eventsPerSecond: 1)) }
         }
     }
 
-    func testStreamPoll_Humidity() {
-        _testPoll(.humidity(oversampling: .x1, pollingRate: 2))
+    func testStreamPoll_Humidity() throws {
+        try _testPoll { _ in
+            [.humidity(oversampling: .x1, rate: .init(eventsPerSecond: 1))]
+        }
     }
 
-    func testStreamPoll_ColorDetector() {
-        _testPoll(.colorDetector(gain: .x1))
+    func testStreamPoll_ColorDetector() throws {
+        try _testPoll { _ in
+            [.colorDetector(gain: .x1)]
+        }
     }
 
-    func testStreamPoll_Proximity() {
-        _testPoll(.proximity(pollingRate: 2, sensitivity: .init(5), current: .mA100))
+    func testStreamPoll_Proximity() throws {
+        try _testPoll { _ in
+            [.proximity(rate: .init(eventsPerSecond: 1), sensitivity: .init(5), current: .mA100)]
+        }
     }
 
     // MARK: - Sensor Fusion All Modes
@@ -99,26 +87,35 @@ class StreamTests: XCTestCase {
 
 extension XCTestCase {
 
-    func _testPoll<P: MWPollable>(_ sut: P, timeout: TimeInterval = .read) {
-        connectNearbyMetaWear(timeout: timeout, useLogger: false) { metawear, exp, subs in
+    func _testPoll<P: MWPollable>(makeSUTs: @escaping (MetaWear) throws -> [P] ) throws {
+        connectNearbyMetaWear(timeout: .download, useLogger: false) { metawear, exp, subs in
             var dataCount = 0
             var sub: AnyCancellable? = nil
+            var suts = try makeSUTs(metawear)
 
-            sub = metawear
-                .publish()
-                .stream(sut)
-                .sink { completion in
-                    guard case let .failure(error) = completion else { return }
-                    XCTFail(error.localizedDescription)
-                } receiveValue: { _, value in
-                    dataCount += 1
-                    Swift.print("Polled", dataCount, value)
-
-                    if dataCount == 5 {
-                        sub?.cancel()
-                        exp.fulfill()
-                    }
+            func test() {
+                guard let sut = suts.popLast() else {
+                    sub?.cancel()
+                    exp.fulfill()
+                    return
                 }
+                sub = metawear
+                    .publish()
+                    .stream(sut)
+                    .sink { completion in
+                        guard case let .failure(error) = completion else { return }
+                        XCTFail(error.localizedDescription)
+                    } receiveValue: { _, value in
+                        dataCount += 1
+                        Swift.print("Polled", dataCount, value)
+
+                        if dataCount == 5 {
+                            sub?.cancel()
+                            test()
+                        }
+                    }
+            }
+            test()
         }
     }
 

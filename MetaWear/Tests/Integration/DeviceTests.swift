@@ -30,7 +30,7 @@ class DeviceTests: XCTestCase {
 
             // Act
             metawear.publish()
-                .read(signal: .lastResetTime)
+                .read(.lastResetTime)
                 ._sinkNoFailure(&subs, receiveValue: { output in
                     lastReset = output.value.time
                     lastResetID = mbl_mw_logging_get_latest_reset_uid(metawear.board)
@@ -44,7 +44,7 @@ class DeviceTests: XCTestCase {
                 .delay(for: 3, tolerance: 0, scheduler: metawear.apiAccessQueue)
                 .flatMap { $0.connectPublisher() }
                 ._assertLoggers([], metawear: metawear)
-                .read(signal: .lastResetTime)
+                .read(.lastResetTime)
                 ._sinkNoFailure(&subs, finished: {  }) { _, reset in
                     let elapsed = lastReset.distance(to: reset.time) / 1000
                     XCTAssertGreaterThan(elapsed, 0)

@@ -14,38 +14,65 @@ class ReadTests: XCTestCase {
     }
 
     func test_Read_Temperature() throws {
-        connectNearbyMetaWear(timeout: .download) { metawear, exp, subs in
-            let sut = try MWThermometer(type: .onboard, board: metawear.board, pollsPerSecond: 1)
-            metawear.publish()
-                .read(signal: sut)
-                ._sinkNoFailure(&subs, receiveValue: { temp in
-                    print(temp.value)
-                    XCTAssertGreaterThan(temp.value, 0)
+        try _testRead { metawear in
+            try [MWThermometer.Source.onboard, .bmp280, .onDie, .external]
+                .map { try .thermometer(type: $0, board: metawear.board) }
+        }
+    }
+
+    func test_Read_() {
+        _testRead { _ in .macAddress }
+    }
+}
+
+extension XCTestCase {
+
+    func _testRead<R: MWReadable>(_ makeSUT: @escaping (MetaWear) -> R ) {
+        connectNearbyMetaWear(timeout: .download, useLogger: false) { metawear, exp, subs in
+            let sut = makeSUT(metawear)
+            metawear
+                .publish()
+                .read(sut)
+                ._sinkNoFailure(&subs, receiveValue: { _, value in
+                    if R.self == MWThermometer.self, let _sut = sut as? MWThermometer {
+                        print("")
+                        Swift.print(_sut.type.displayName)
+                    }
+                    Swift.print("Read", value)
                     exp.fulfill()
                 })
         }
     }
 
-    func test_Read_Temperature_BMP280() throws {
+    func _testRead<R: MWReadable>(makeSUTs: @escaping (MetaWear) throws -> [R] ) throws {
         connectNearbyMetaWear(timeout: .download, useLogger: false) { metawear, exp, subs in
-            var modes: [MWThermometer.Source] = [.onboard, .bmp280]
             var sub: AnyCancellable? = nil
+            var suts = try makeSUTs(metawear)
 
             func test() {
-                guard let mode = modes.popLast() else {
+                guard let sut = suts.popLast() else {
                     sub?.cancel()
                     exp.fulfill()
                     return
                 }
-                let sut = try! MWThermometer(type: mode, board: metawear.board, pollsPerSecond: 1)
                 sub = metawear
                     .publish()
-                    .read(signal: sut)
+                    .read(sut)
                     .sink { completion in
                         guard case let .failure(error) = completion else { return }
                         XCTFail(error.localizedDescription)
-                    } receiveValue: { value in
-                        Swift.print("Read", value)
+                    } receiveValue: { _, value in
+
+                        if R.self == MWThermometer.self, let _sut = sut as? MWThermometer {
+                            Swift.print(_sut.type.displayName)
+                        }
+
+                        if R.DataType.self == Float.self {
+                            Swift.print("Read", Int(value as! Float))
+                        } else {
+                            Swift.print("Read", value)
+                        }
+
                         test()
                     }
             }

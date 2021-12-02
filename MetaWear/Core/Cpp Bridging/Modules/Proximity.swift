@@ -18,16 +18,16 @@ public struct MWProximity: MWPollable, MWReadable {
     public var current: TransmitterCurrent?
     /// milliseconds
     public var integrationTimeMS: Double
-    public var pollingRate: TimeInterval
+    public var pollingRate: MWFrequency
     public var pulses: Pulses
 
     public init(current: TransmitterCurrent? = nil,
                 sensitivity: Pulses = .init(1),
                 integrationTimeMS: Double = 2.73,
-                pollingRate: TimeInterval = 1
+                rate: MWFrequency
     ) {
         self.current = current
-        self.pollingRate = pollingRate
+        self.pollingRate = rate
         self.pulses = sensitivity
         self.integrationTimeMS = integrationTimeMS
     }
@@ -57,11 +57,11 @@ public extension MWProximity {
 // MARK: - Discoverable Presets
 
 public extension MWPollable where Self == MWProximity {
-    static func proximity(pollingRate: TimeInterval = 1,
+    static func proximity(rate: MWFrequency,
                           sensitivity: MWProximity.Pulses = .init(1),
                           current: MWProximity.TransmitterCurrent? = nil
     ) -> Self {
-        Self(current: current, sensitivity: sensitivity, pollingRate: pollingRate)
+        Self(current: current, sensitivity: sensitivity, rate: rate)
     }
 }
 
@@ -69,7 +69,7 @@ public extension MWReadable where Self == MWProximity {
     static func proximity(sensitivity: MWProximity.Pulses = .init(1),
                           current: MWProximity.TransmitterCurrent? = nil
     ) -> Self {
-        Self(current: current, sensitivity: sensitivity)
+        Self(current: current, sensitivity: sensitivity, rate: .init(eventsPerSecond: 1))
     }
 }
 

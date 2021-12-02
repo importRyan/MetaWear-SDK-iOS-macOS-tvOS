@@ -671,7 +671,7 @@ private extension MetaWear {
         _setupMacToken?.cancel()
         _setupMacToken = self
             .publish()
-            .read(signal: .macAddress)
+            .read(.macAddress)
             .map(\.value)
             .sink { [weak self] completion in
                 switch completion {

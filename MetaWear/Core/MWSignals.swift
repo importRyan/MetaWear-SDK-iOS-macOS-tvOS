@@ -64,16 +64,38 @@ public protocol MWStreamable: MWDataConvertible {
 /// by polling at a reasonable interval.
 public protocol MWPollable: MWReadable {
 
-    /// Rate at which the MetaWear board should be queried for values
-    var pollingRate: TimeInterval { get }
+    /// Queries per second or by millisecond periods
+    var pollingRate: MWFrequency { get }
 
     // Commands to customize the "stream"
     func pollConfigure(board: MWBoard)
+
     /// Obtains a reference to the module's
     /// "streamable" signal.
     func pollSensorSignal(board: MWBoard) throws -> MWDataSignal?
+
+    func pollCleanup(board: MWBoard)
 }
 
+/// Specify event frequencies in Hz or millisecond periods between events
+///
+public struct MWFrequency {
+
+    // Events per second (Hz)
+    public let rateHz: Double
+    // Milliseconds between events
+    public let periodMs: Int
+
+    public init(eventsPerSecond: Double) {
+        self.rateHz = eventsPerSecond
+        self.periodMs = Int(1/rateHz * 1000)
+    }
+
+    public init(periodMs: Int) {
+        self.periodMs = periodMs
+        self.rateHz = 1000 / Double(periodMs)
+    }
+}
 
 // MARK: - Read Once
 
@@ -125,42 +147,7 @@ public extension MWPollable {
         try self.readableSignal(board: board)
     }
 
-    var pollingPeriod: UInt32 {
-        UInt32(1/pollingRate)
-    }
-}
-
-/// Raw value: ms
-public enum MWPollingFrequency: Int, CaseIterable, IdentifiableByRawValue {
-    case hr1
-    case m30
-    case m10
-    case m1
-    case s30
-    case s10
-    case s5
-    case s2
-    case hz1
-    case hz10
-    case hz25
-    case hz50
-    case hz100
-
-    public var ms: Int {
-        switch self {
-            case .hr1:   return 3_300_000
-            case .m30:   return 1_800_000
-            case .m10:   return 600_000
-            case .m1:    return 60_000
-            case .s30:   return 30_000
-            case .s10:   return 10_000
-            case .s5:    return 5_000
-            case .s2:    return 2_000
-            case .hz1:   return 1_000
-            case .hz10:  return 100
-            case .hz25:  return 40
-            case .hz50:  return 20
-            case .hz100: return 10
-        }
+    func pollCleanup(board: MWBoard) {
+        self.readCleanup(board: board)
     }
 }

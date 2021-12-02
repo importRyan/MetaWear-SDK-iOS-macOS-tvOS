@@ -19,7 +19,6 @@ public func _datasignal_subscribe(_ signal: OpaquePointer) -> MWDataSubject {
     mbl_mw_datasignal_subscribe(signal, bridge(obj: dataStream)) { context, dataPtr in
         let _subject: MWDataSubject = bridge(ptr: context!)
         if let data = dataPtr {
-            debugPrinter(p: "Received value")
             _subject.send(data.pointee.copy())
         } else {
             let error = MWError.operationFailed("Could not subscribe")

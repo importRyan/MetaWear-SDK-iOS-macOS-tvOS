@@ -45,7 +45,11 @@ public extension Publisher where Output == MetaWear {
         }
         .mapToMetaWearError()
         .flatMap { o -> MWPublisher<MWData> in
-            _poll(polling: o.sensor, periodMs: pollable.pollingPeriod)
+            _poll(
+                polling: o.sensor,
+                rate: pollable.pollingRate,
+                cleanup: { pollable.pollCleanup(board: o.metawear.board) }
+            )
         }
         .map(pollable.convertRawToSwift)
         .eraseToAnyPublisher()
@@ -90,11 +94,12 @@ public extension Publisher where Output == MetaWear {
     /// - Returns: Stream of timestamped, cast data from the polled signal
     ///
     func stream<T>(polling readableSignal: OpaquePointer,
-                   periodMs: UInt32,
-                   as type: T.Type
+                   rate: MWFrequency,
+                   as type: T.Type,
+                   cleanup: (() -> Void)?
     ) -> MWPublisher<Timestamped<T>> {
 
-        _poll(polling: readableSignal, periodMs: periodMs)
+        _poll(polling: readableSignal, rate: rate, cleanup: cleanup)
             .map { ($0.timestamp, $0.valueAs() as T) }
             .eraseToAnyPublisher()
     }
@@ -112,14 +117,15 @@ public extension Publisher where Output == MetaWear {
     /// - Returns: Stream of data from the polled signal
     ///
     func _poll(polling readableSignal: OpaquePointer,
-               periodMs: UInt32
+               rate: MWFrequency,
+               cleanup: (() -> Void)?
     ) -> MWPublisher<MWData> {
         mapToMetaWearError()
             .flatMap { metawear -> MWPublisher<(metawear: MetaWear, countedSensor: OpaquePointer, timer: OpaquePointer)> in
                 mapToMetaWearError()
                     .zip(readableSignal.accounterCreateCount(),
                          metawear.board.createTimedEvent(
-                            period: periodMs,
+                            period: UInt32(rate.periodMs),
                             repetitions: .max,
                             immediateFire: false,
                             recordedEvent: { mbl_mw_datasignal_read(readableSignal) }
@@ -135,6 +141,7 @@ public extension Publisher where Output == MetaWear {
                     mbl_mw_timer_stop(o.timer)
                     mbl_mw_timer_remove(o.timer)
                     mbl_mw_datasignal_unsubscribe(o.countedSensor)
+                    cleanup?()
                 }
 
                 return data

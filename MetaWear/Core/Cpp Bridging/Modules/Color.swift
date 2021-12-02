@@ -13,12 +13,12 @@ public struct MWColorDetector: MWPollable, MWReadable {
     public var loggerName: MWLogger = .color
 
     public var gain: Gain? = nil
-    public var pollingRate: TimeInterval
+    public var pollingRate: MWFrequency
     public private(set) var integrationTime: Double
 
-    public init(gain: Gain? = nil, integrationTime: Double, pollingRate: TimeInterval = 1) throws {
+    public init(gain: Gain? = nil, integrationTime: Double, rate: MWFrequency) throws {
         self.gain = gain
-        self.pollingRate = pollingRate
+        self.pollingRate = rate
         self.integrationTime = 0
         try self.setIntegrationTime(integrationTime)
     }
@@ -61,14 +61,14 @@ public extension MWColorDetector {
 // MARK: - Discoverable Presets
 
 public extension MWPollable where Self == MWColorDetector {
-    static func colorDetector(gain: MWColorDetector.Gain?, pollingRate: TimeInterval = 1) -> Self {
-        try! Self(gain: gain, integrationTime: 36, pollingRate: pollingRate)
+    static func colorDetector(gain: MWColorDetector.Gain?, rate: MWFrequency) -> Self {
+        try! Self(gain: gain, integrationTime: 36, rate: rate)
     }
 }
 
 public extension MWReadable where Self == MWColorDetector {
     static func colorDetector(gain: MWColorDetector.Gain?) -> Self {
-        try! Self(gain: gain, integrationTime: 36)
+        try! Self(gain: gain, integrationTime: 36, rate: .init(eventsPerSecond: 1))
     }
 }
 
