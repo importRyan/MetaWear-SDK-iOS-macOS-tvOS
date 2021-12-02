@@ -11,7 +11,7 @@ public struct MWBarometer { }
 extension MWBarometer {
 
     /// Meters
-    public struct MWAltitude: MWStreamable {
+    public struct MWAltitude: MWStreamable, MWLoggable {
 
         /// Meters
         public typealias DataType = Float
@@ -32,7 +32,7 @@ extension MWBarometer {
     }
 
     /// Pascals (Pa)
-    public struct MWPressure: MWStreamable {
+    public struct MWPressure: MWStreamable, MWLoggable {
 
         /// Pascals (Pa)
         public typealias DataType = Float
@@ -120,6 +120,21 @@ public extension MWStreamable where Self == MWBarometer.MWAltitude {
     }
 }
 public extension MWStreamable where Self == MWBarometer.MWPressure {
+    static func relativePressure(standby: MWBarometer.StandbyTime? = nil,
+                                 iir: MWBarometer.IIRFilter? = nil,
+                                 oversampling: MWBarometer.Oversampling? = nil) -> Self {
+        Self(standby: standby, iir: iir, oversampling: oversampling)
+    }
+}
+
+public extension MWLoggable where Self == MWBarometer.MWAltitude {
+    static func absoluteAltitude(standby: MWBarometer.StandbyTime? = nil,
+                                 iir: MWBarometer.IIRFilter? = nil,
+                                 oversampling: MWBarometer.Oversampling? = nil) -> Self {
+        Self(standby: standby, iir: iir, oversampling: oversampling)
+    }
+}
+public extension MWLoggable where Self == MWBarometer.MWPressure {
     static func relativePressure(standby: MWBarometer.StandbyTime? = nil,
                                  iir: MWBarometer.IIRFilter? = nil,
                                  oversampling: MWBarometer.Oversampling? = nil) -> Self {

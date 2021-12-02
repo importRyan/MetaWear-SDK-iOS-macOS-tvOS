@@ -150,11 +150,26 @@ public extension Publisher where Output == MetaWear, Failure == MWError {
         .eraseToAnyPublisher()
     }
 
+    /// Wipes logged data.
+    ///
     func deleteLoggedEntries() -> MWPublisher<MetaWear> {
         flatMap { metawear in
             _JustMW(metawear)
                 .handleEvents(receiveOutput: { metaWear in
                     mbl_mw_logging_clear_entries(metaWear.board)
+                })
+                .erase(subscribeOn: metawear.apiAccessQueue)
+        }
+        .eraseToAnyPublisher()
+    }
+
+    /// Performs a factory reset, wiping all content and settings, before disconnecting.
+    ///
+    func factoryReset() -> MWPublisher<MetaWear> {
+        flatMap { metawear in
+            Just(metawear)
+                .handleEvents(receiveOutput: { metaWear in
+                    metawear.resetToFactoryDefaults()
                 })
                 .erase(subscribeOn: metawear.apiAccessQueue)
         }

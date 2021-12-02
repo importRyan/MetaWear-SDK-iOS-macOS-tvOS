@@ -27,9 +27,6 @@ public struct MWColorDetector: MWPollable, MWReadable {
     public static let validIntegrationTimesMS = (2.4...614.4)
 
     public mutating func setIntegrationTime(_ time: Double) throws {
-        print("____\(time)___")
-        print(Self.validIntegrationTimesMS.contains(time))
-        print(time.truncatingRemainder(dividingBy: 2.4))
         guard Self.validIntegrationTimesMS.contains(time), time.remainder(dividingBy: 2.4) < 0.001
         else { throw MWError.operationFailed("Invalid timing. Must be increment of 2.4 ms and between 2.4 and 614.4 ms.") }
         let t = time - time.remainder(dividingBy: 2.4)

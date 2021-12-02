@@ -46,6 +46,26 @@ extension Publisher {
         }, receiveValue: receiveValue)
             .store(in: &subs)
     }
+
+    func _sinkExpectFailure(file: StaticString = #file,
+                            line: UInt = #line,
+                            _ subs: inout Set<AnyCancellable>,
+                            exp: XCTestExpectation,
+                            errorMessage: String
+    ) {
+
+        sink(receiveCompletion: { completion in
+            switch completion {
+                case .failure(let error):
+                    XCTAssertEqual(error.localizedDescription, errorMessage, file: file, line: line)
+                    exp.fulfill()
+
+                case .finished:
+                    XCTFail("Expected to fail", file: file, line: line)
+            }
+        }, receiveValue: { _ in XCTFail("Expected to fail", file: file, line: line) })
+            .store(in: &subs)
+    }
 }
 
 // MARK: - Loggers
@@ -63,6 +83,7 @@ extension Publisher {
                 metawear.publish()
                     .collectAnonymousLoggerSignals()
                     .map { result -> Output in
+                        Swift.print("Loggers found: ", result.map(\.id.name))
                         XCTAssertEqual(loggers.count, result.count, file: file, line: line)
                         XCTAssertEqual(Set(loggers), Set(result.map(\.id)), file: file, line: line)
                         return output
