@@ -70,8 +70,10 @@ func castAs<T>(_ target: Claim<T>, _ pointer: UnsafeRawBufferPointer) -> T {
         return String(cString: typed) as! T
     }
     if isDataArray(target) {
-        let buffer = pointer.bindMemory(to: T.self)
-        return Array(buffer) as! T
+             let count = Int(pointer.endIndex) / MemoryLayout<UnsafePointer<MblMwData>>.size
+             let arrayPointer = pointer.baseAddress?.bindMemory(to: UnsafePointer<MblMwData>.self, capacity: count)
+             let buffer = UnsafeBufferPointer(start: arrayPointer, count: count)
+             return buffer.map { $0.pointee } as! T
     }
 
     assert(MemoryLayout<T>.size == pointer.endIndex)
