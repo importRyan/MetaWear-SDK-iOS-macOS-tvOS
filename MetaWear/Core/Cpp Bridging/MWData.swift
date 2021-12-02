@@ -14,48 +14,11 @@ public struct MWData {
     let typeId: MblMwDataTypeId
 
     public func valueAs<T>() -> T {
-        handledB()
-    }
-
-    func dangling<T>() -> T {
-        cast(length: UInt8(data.endIndex), typeId: typeId, value: UnsafeRawPointer(data))
-    }
-
-    func handledB<T>() -> T {
         data.withUnsafeBytes { p in
-            let length = data.endIndex
-            let target = (T.self, typeId)
-
-            if isByteArray(target) {
-                return Array(p) as! T
-            }
-            if isString(target), let typed = p.baseAddress?.assumingMemoryBound(to: CChar.self) {
-                return String(cString: typed) as! T
-            }
-            if isDataArray(target) {
-                let buffer = p.bindMemory(to: T.self)
-                return Array(buffer) as! T
-            }
-            assert(MemoryLayout<T>.size == length)
-            assertMatching(target)
-            return p.load(as: T.self)
-        }
-    }
-
-    func handled<T>() -> T {
-        withUnsafePointer(to: data) { p -> T in
-            let length = UInt8(data.endIndex)
-            print(T.self, typeId)
-
-            assert(MemoryLayout<T>.size == length)
-            assertMatching((T.self, typeId))
-            return p.withMemoryRebound(to: T.self, capacity: 1) { typed in
-                return typed.pointee
-            }
+            castAs((T.self, typeId), p)
         }
     }
 }
-
 
 // MARK: - Log Wrapper
 
@@ -88,7 +51,8 @@ extension MblMwData {
     }
 
     public func valueAs<T>() -> T {
-        cast(length: length, typeId: type_id, value: value)
+        let b = UnsafeRawBufferPointer(start: value, count: .init(length))
+        return castAs((T.self, type_id), b)
     }
 
     public func extraAs<T>() -> T {
@@ -98,32 +62,21 @@ extension MblMwData {
 
 // MARK: - Cast
 
-fileprivate func cast<T>(length: UInt8, typeId: MblMwDataTypeId, value: UnsafeRawPointer) -> T {
-    if let string = castAsString(T.self, value, typeId) { return string }
-    if let byteArray = castAsByteArray(T.self, .init(length), value, typeId) { return byteArray }
-    if let dataArray = castAsDataArray(T.self, .init(length), value, typeId) { return dataArray }
-    assert(MemoryLayout<T>.size == length)
-    assertMatching((T.self, typeId))
-    return value.bindMemory(to: T.self, capacity: 1).pointee
-}
+func castAs<T>(_ target: Claim<T>, _ pointer: UnsafeRawBufferPointer) -> T {
+    if isByteArray(target) {
+        return Array(pointer) as! T
+    }
+    if isString(target), let typed = pointer.baseAddress?.assumingMemoryBound(to: CChar.self) {
+        return String(cString: typed) as! T
+    }
+    if isDataArray(target) {
+        let buffer = pointer.bindMemory(to: T.self)
+        return Array(buffer) as! T
+    }
 
-fileprivate func castAsString<T>(_ type: T.Type, _ value: UnsafeRawPointer, _ typeId: MblMwDataTypeId) -> T? {
-    guard isString((T.self, typeId)) else { return nil }
-    return String(cString: value.assumingMemoryBound(to: CChar.self)) as? T
-}
-
-fileprivate func castAsByteArray<T>(_ type: T.Type, _ length: Int, _ value: UnsafeRawPointer, _ typeId: MblMwDataTypeId) -> T? {
-    guard isByteArray((T.self, typeId)) else { return nil }
-    let buffer = UnsafeRawBufferPointer(start: value, count: length)
-    return Array(buffer) as? T
-}
-
-fileprivate func castAsDataArray<T>(_ type: T.Type, _ length: Int, _ value: UnsafeRawPointer, _ typeId: MblMwDataTypeId) -> T? {
-    guard isDataArray((T.self, typeId)) else { return nil }
-    let count = length / MemoryLayout<UnsafePointer<MblMwData>>.size
-    let pointer = value.bindMemory(to: UnsafePointer<MblMwData>.self, capacity: count)
-    let buffer = UnsafeBufferPointer(start: pointer, count: count)
-    return buffer.map { $0.pointee } as? T
+    assert(MemoryLayout<T>.size == pointer.endIndex)
+    assertMatching(target)
+    return pointer.load(as: T.self)
 }
 
 typealias Claim<T> = (type: T.Type, typeId: MblMwDataTypeId)
