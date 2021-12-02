@@ -64,6 +64,10 @@ public protocol MWStreamable: MWDataConvertible {
 /// by polling at a reasonable interval.
 public protocol MWPollable: MWReadable {
 
+    /// The MetaWear device's identifier
+    /// for the logger.
+    var loggerName: MWLogger { get }
+
     /// Queries per second or by millisecond periods
     var pollingRate: MWFrequency { get }
 

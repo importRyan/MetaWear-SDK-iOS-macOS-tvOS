@@ -6,14 +6,13 @@ import MetaWearCpp
 
 // MARK: - Start Logging
 
-public extension Publisher where Output == MetaWear, Failure == MWError {
+public extension Publisher where Output == MetaWear {
 
     /// Starts logging a preset sensor configuration.
     /// - Returns: The connected MetaWear or an error if the logging attempt fails.
     ///
     func log<L: MWLoggable>(_ loggable: L, overwriting: Bool = false) -> MWPublisher<MetaWear> {
         let errorMsg = MWError.operationFailed("Unable to log \(loggable.name)")
-
         return self
             .handleEvents(receiveOutput: { loggable.loggerConfigure(board: $0.board) })
             .tryMap { mw -> (MetaWear, OpaquePointer) in
@@ -23,8 +22,7 @@ public extension Publisher where Output == MetaWear, Failure == MWError {
             }
             .mapToMetaWearError()
             .flatMap { metawear, signal -> MWPublisher<MetaWear> in
-
-                return signal
+                signal
                     .log(board: metawear.board,
                          overwriting: overwriting,
                          start: { loggable.loggerStart(board: metawear.board) }
@@ -37,23 +35,59 @@ public extension Publisher where Output == MetaWear, Failure == MWError {
             .eraseToAnyPublisher()
     }
 
-//    /// Starts logging a preset sensor configuration that requires a timer.
-//    /// - Returns: The conencted MetaWear or an error if the timer or logging setup fails.
-//    ///
-//    func log<P: MWPollable>(_ pollable: P, overwriting: Bool = false) -> MWPublisher<MetaWear> {
-//        _setupPollableAndTimer(pollable)
-//            ._setupPollableEvent()
-//            .flatMap { metawear, sensor, timer -> MWPublisher<MetaWear> in
-//                let errorMsg = MWError.operationFailed("Unable to log \(pollable.name)")
-//                let start = { mbl_mw_timer_start(timer) }
-//                return sensor
-//                    .log(board: metawear.board, overwriting: overwriting, start: start)
-//                    .compactMap { [weak metawear] _ in metawear }
-//                    .mapError { _ in errorMsg }
-//                    .erase(subscribeOn: metawear.apiAccessQueue)
-//            }
-//            .eraseToAnyPublisher()
-//    }
+    #warning("Handle custom loggable signal names by adding them to the cache")
+
+    /// Starts logging a preset sensor configuration that works by polling a readable signal.
+    /// - Returns: The connected MetaWear or an error if the logging attempt fails.
+    ///
+    func log<P: MWPollable>(byPolling pollable: P, overwriting: Bool = false) -> MWPublisher<MetaWear> {
+        tryMap { metawear -> (metawear: MetaWear, sensor: MWDataSignal) in
+            guard let moduleSignal = try pollable.pollSensorSignal(board: metawear.board)
+            else { throw MWError.operationFailed("Could not create \(pollable.name)") }
+            pollable.pollConfigure(board: metawear.board)
+            return (metawear, moduleSignal)
+        }
+        .mapToMetaWearError()
+        .flatMap { o -> MWPublisher<MetaWear> in
+            log(byPolling: o.sensor, rate: pollable.pollingRate, overwriting: overwriting)
+                .mapError { _ in MWError.operationFailed("Unable to log \(pollable.name)") }
+                .erase(subscribeOn: o.metawear.apiAccessQueue)
+        }
+        .share()
+        .eraseToAnyPublisher()
+    }
+    /// Starts logging any data signal that can be read by `mbl_mw_datasignal_read` at the intervals specified.
+    /// - Returns: The connected MetaWear or an error if the logging attempt fails.
+    ///
+    func log(byPolling readableSignal: MWDataSignal, rate: MWFrequency, overwriting: Bool = false) -> MWPublisher<MetaWear> {
+        mapToMetaWearError()
+            .flatMap { metawear -> MWPublisher<(metawear: MetaWear, countedSensor: MWDataSignal, timer: MWDataSignal)> in
+                mapToMetaWearError()
+                    .zip(readableSignal.accounterCreateCount(),
+                         metawear.board.createTimedEvent(
+                            period: UInt32(rate.periodMs),
+                            repetitions: .max,
+                            immediateFire: false,
+                            recordedEvent: { mbl_mw_datasignal_read(readableSignal) }
+                         )
+                    ) { ($0, $1, $2) }.eraseToAnyPublisher()
+            }
+            .flatMap { o -> MWPublisher<MetaWear> in
+                let device = o.metawear
+                return o.countedSensor
+                    .makeLoggerSignal()
+                    .handleEvents(receiveOutput: { [weak device] _ in
+                        guard let device = device else { return }
+                        mbl_mw_logging_start(device.board, overwriting ? 1 : 0)
+                        mbl_mw_timer_start(o.timer)
+                    })
+                    .compactMap { [weak device] _ in device }
+                    .subscribe(on: device.apiAccessQueue)
+                    .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
+    }
+
 }
 
 // MARK: - Download Logs

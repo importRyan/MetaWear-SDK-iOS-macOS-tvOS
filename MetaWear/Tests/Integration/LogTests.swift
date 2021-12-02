@@ -93,6 +93,35 @@ class LogTests: XCTestCase {
 
 extension XCTestCase {
 
+    func _testLog<P: MWPollable>(byPolling sut: P, file: StaticString = #file, line: UInt = #line, expectFailure: String? = nil) {
+        connectNearbyMetaWear(timeout: .download, useLogger: false) { metawear, exp, subs in
+            let pipline =
+            metawear.publish()
+                ._assertLoggers([], metawear: metawear, file: file, line: line)
+                .logP(sut)
+                ._assertLoggers([sut.loggerName], metawear: metawear, file: file, line: line)
+                .share()
+                .delay(for: 1, tolerance: 0, scheduler: metawear.apiAccessQueue)
+                .logDownload(sut)
+
+            // Assert
+                .handleEvents(receiveOutput: { data, percentComplete in
+                    _printProgress(percentComplete)
+                    if percentComplete < 1 { XCTAssertTrue(data.isEmpty, file: file, line: line) }
+                    guard percentComplete == 1.0 else { return }
+                    XCTAssertGreaterThan(data.endIndex, 0, file: file, line: line)
+                })
+                .drop(while: { $0.percentComplete < 1 })
+                ._assertLoggers([], metawear: metawear, file: file, line: line)
+
+            if let message = expectFailure {
+                pipline._sinkExpectFailure(file: file, line: line, &subs, exp: exp, errorMessage: message)
+            } else {
+                pipline._sinkNoFailure(file: file, line: line, &subs, receiveValue: { _ in print(sut.loggerName); exp.fulfill() })
+            }
+        }
+    }
+
     func _testLog<L: MWLoggable>(_ sut: L, file: StaticString = #file, line: UInt = #line, expectFailure: String? = nil) {
         connectNearbyMetaWear(timeout: .download, useLogger: false) { metawear, exp, subs in
             let pipline =
