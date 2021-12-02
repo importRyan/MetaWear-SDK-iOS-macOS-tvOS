@@ -36,3 +36,22 @@ public extension MWBoard {
             .eraseToAnyPublisher()
     }
 }
+
+// MARK: - Command-like Publishers
+
+public extension Publisher where Output == MetaWear, Failure == MWError {
+
+    /// Performs a factory reset, wiping all content and settings, before disconnecting.
+    ///
+    func factoryReset() -> MWPublisher<MetaWear> {
+        flatMap { metawear in
+            Just(metawear)
+                .handleEvents(receiveOutput: { metaWear in
+                    metawear.resetToFactoryDefaults()
+                })
+                .erase(subscribeOn: metawear.apiAccessQueue)
+        }
+        .eraseToAnyPublisher()
+    }
+}
+
