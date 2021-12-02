@@ -69,8 +69,8 @@ Using any ``MWPublisher`` ensures calls into the C++ library and reads of any pr
 - ``MWReadable``
 - ``MWPollable``
 - ``MWStreamable``
+- ``MWFrequency``
 - ``MWLogger``
-- ``MWPollingFrequency``
 
 ### Data Output
 
@@ -79,6 +79,7 @@ Streaming data arrives in Swift formats. Logged data downloads in a string-based
 - ``MWDataTable``
 - ``MWData``
 - ``MWDataConvertible``
+- ``Download``
 - ``Timestamped``
 
 ### Modules

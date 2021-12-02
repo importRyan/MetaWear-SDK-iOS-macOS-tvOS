@@ -8,16 +8,16 @@ import MetaWearCpp
 // MARK: - C++ Closure -> MWData
 
 public typealias _MWStatusSubject         = PassthroughSubject<MWStatusCode,MWError>
-public typealias MWDataSubject            = PassthroughSubject<MWData, MWError>
-public typealias MWDataArraySubject       = CurrentValueSubject<[MWData], MWError>
+public typealias _MWDataSubject            = PassthroughSubject<MWData, MWError>
+public typealias _MWDataArraySubject       = CurrentValueSubject<[MWData], MWError>
 public typealias _MWDataProcessorSubject  = PassthroughSubject<MWDataProcessorSignal, MWError>
 public typealias _MWDataProcessorFunction = (OpaquePointer?, UnsafeMutableRawPointer?, MblMwFnDataProcessor?) -> Int32
 public typealias _MWDataProcessorFunctionUInt8 = (OpaquePointer?, UInt8, UnsafeMutableRawPointer?, MblMwFnDataProcessor?) -> Int32
 
-public func _datasignal_subscribe(_ signal: OpaquePointer) -> MWDataSubject {
-    let dataStream = MWDataSubject()
+public func _datasignal_subscribe(_ signal: OpaquePointer) -> _MWDataSubject {
+    let dataStream = _MWDataSubject()
     mbl_mw_datasignal_subscribe(signal, bridge(obj: dataStream)) { context, dataPtr in
-        let _subject: MWDataSubject = bridge(ptr: context!)
+        let _subject: _MWDataSubject = bridge(ptr: context!)
         if let data = dataPtr {
             _subject.send(data.pointee.copy())
         } else {
@@ -28,20 +28,20 @@ public func _datasignal_subscribe(_ signal: OpaquePointer) -> MWDataSubject {
     return dataStream
 }
 
-public func _datasignal_subscribe_accumulate(_ signal: OpaquePointer) -> MWDataArraySubject {
-    let subject = MWDataArraySubject([])
+public func _datasignal_subscribe_accumulate(_ signal: OpaquePointer) -> _MWDataArraySubject {
+    let subject = _MWDataArraySubject([])
     mbl_mw_logger_subscribe(signal, bridge(obj: subject)) { _context, dataPtr in
-        let _subject: MWDataArraySubject = bridge(ptr: _context!)
+        let _subject: _MWDataArraySubject = bridge(ptr: _context!)
         let datum = dataPtr!.pointee.copy()
         _subject.send(_subject.value + CollectionOfOne(datum))
     }
     return subject
 }
 
-public func _datasignal_subscribe_outputOnlyOnce(_ signal: OpaquePointer) -> MWDataSubject {
-    let dataStream = MWDataSubject()
+public func _datasignal_subscribe_outputOnlyOnce(_ signal: OpaquePointer) -> _MWDataSubject {
+    let dataStream = _MWDataSubject()
     mbl_mw_datasignal_subscribe(signal, bridge(obj: dataStream)) { context, dataPtr in
-        let _subject: MWDataSubject = bridge(ptr: context!)
+        let _subject: _MWDataSubject = bridge(ptr: context!)
         if let data = dataPtr {
             _subject.send(data.pointee.copy())
             _subject.send(completion: .finished)
