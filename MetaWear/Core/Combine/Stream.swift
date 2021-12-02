@@ -37,7 +37,7 @@ public extension Publisher where Output == MetaWear {
     /// - Returns: Time-stamped sensor data
     ///
     func stream<P: MWPollable>(_ pollable: P) -> MWPublisher<Timestamped<P.DataType>> {
-        tryMap { metawear -> (metawear: MetaWear, sensor: OpaquePointer) in
+        tryMap { metawear -> (metawear: MetaWear, sensor: MWDataSignal) in
             guard let moduleSignal = try pollable.pollSensorSignal(board: metawear.board)
             else { throw MWError.operationFailed("Could not create \(pollable.name)") }
             pollable.pollConfigure(board: metawear.board)
@@ -70,7 +70,7 @@ public extension Publisher where Output == MetaWear {
     ///
     /// - Returns: Pipeline on the BLE queue with the cast data.
     ///
-    func stream<T>(signal: OpaquePointer,
+    func stream<T>(signal: MWDataSignal,
                    as type: T.Type,
                    start: (() -> Void)?,
                    cleanup: (() -> Void)?
@@ -93,7 +93,7 @@ public extension Publisher where Output == MetaWear {
     ///   - as: Type to cast the data
     /// - Returns: Stream of timestamped, cast data from the polled signal
     ///
-    func stream<T>(polling readableSignal: OpaquePointer,
+    func stream<T>(polling readableSignal: MWDataSignal,
                    rate: MWFrequency,
                    as type: T.Type,
                    cleanup: (() -> Void)?
@@ -116,12 +116,12 @@ public extension Publisher where Output == MetaWear {
     ///   - periodMs: Milliseconds between poll events
     /// - Returns: Stream of data from the polled signal
     ///
-    func _poll(polling readableSignal: OpaquePointer,
+    func _poll(polling readableSignal: MWDataSignal,
                rate: MWFrequency,
                cleanup: (() -> Void)?
     ) -> MWPublisher<MWData> {
         mapToMetaWearError()
-            .flatMap { metawear -> MWPublisher<(metawear: MetaWear, countedSensor: OpaquePointer, timer: OpaquePointer)> in
+            .flatMap { metawear -> MWPublisher<(metawear: MetaWear, countedSensor: MWDataSignal, timer: MWDataSignal)> in
                 mapToMetaWearError()
                     .zip(readableSignal.accounterCreateCount(),
                          metawear.board.createTimedEvent(
