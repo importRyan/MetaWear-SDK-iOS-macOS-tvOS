@@ -20,6 +20,7 @@ public enum MWLogger: Equatable, Hashable {
     case proximity
     case quaternion
     case steps
+    case temperature
 
     #warning("FINISH LOGGER KEYS: ORIENTATION, STEPS x2")
     public var name: String {
@@ -39,6 +40,7 @@ public enum MWLogger: Equatable, Hashable {
             case .custom(let string): return string
             case .orientation: return "orientation"
             case .steps: return "steps"
+            case .temperature: return "temperature"
         }
     }
 

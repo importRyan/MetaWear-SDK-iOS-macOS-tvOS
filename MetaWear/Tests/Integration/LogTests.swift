@@ -37,6 +37,14 @@ class LogTests: XCTestCase {
         _testLog(.orientation, expectFailure: "Operation failed: Orientation requires a BMI160 module, which this device lacks.")
     }
 
+    // MARK: - Pollable
+
+    func test_LogThenDownload_Temperature() throws {
+        _testLog(byPolling: {
+            try! MWThermometer(type: .onboard, board: $0.board, rate: .init(eventsPerSecond: 1))
+        })
+    }
+
     // MARK: - Multiple
 
     func test_LogThenDownload_TwoSensors_AccelerometerMagnetometer() {
@@ -93,31 +101,35 @@ class LogTests: XCTestCase {
 
 extension XCTestCase {
 
-    func _testLog<P: MWPollable>(byPolling sut: P, file: StaticString = #file, line: UInt = #line, expectFailure: String? = nil) {
+    func _testLog<P: MWPollable>(byPolling sut: @escaping (MetaWear) -> P, file: StaticString = #file, line: UInt = #line, expectFailure: String? = nil) {
         connectNearbyMetaWear(timeout: .download, useLogger: false) { metawear, exp, subs in
+            let _sut = sut(metawear)
+
             let pipline =
             metawear.publish()
-                ._assertLoggers([], metawear: metawear, file: file, line: line)
-                .logP(sut)
-                ._assertLoggers([sut.loggerName], metawear: metawear, file: file, line: line)
-                .share()
-                .delay(for: 1, tolerance: 0, scheduler: metawear.apiAccessQueue)
-                .logDownload(sut)
-
-            // Assert
-                .handleEvents(receiveOutput: { data, percentComplete in
-                    _printProgress(percentComplete)
-                    if percentComplete < 1 { XCTAssertTrue(data.isEmpty, file: file, line: line) }
-                    guard percentComplete == 1.0 else { return }
-                    XCTAssertGreaterThan(data.endIndex, 0, file: file, line: line)
-                })
-                .drop(while: { $0.percentComplete < 1 })
-                ._assertLoggers([], metawear: metawear, file: file, line: line)
+                ._assertLoggers([], metawear: metawear, file, line)
+                .log(byPolling: _sut)
+                ._assertLoggers([_sut.loggerName], metawear: metawear, file, line)
+//                .share()
+//                .delay(for: 1, tolerance: 0, scheduler: metawear.apiAccessQueue)
+//                .logsDownload()
+//
+//            // Assert
+//                .handleEvents(receiveOutput: { tables, percentComplete in
+//                    _printProgress(percentComplete)
+//                    if percentComplete < 1 { XCTAssertTrue(tables.isEmpty, file: file, line: line) }
+//                    guard percentComplete == 1.0 else { return }
+//                    XCTAssertEqual(tables.endIndex, 1, file: file, line: line)
+//                    XCTAssertEqual(Set(tables.map(\.source)), Set([_sut.loggerName]), file: file, line: line)
+//                    XCTAssertTrue(tables.allSatisfy({ $0.rows.isEmpty == false }), file: file, line: line)
+//                })
+//                .drop(while: { $0.percentComplete < 1 })
+//                ._assertLoggers([], metawear: metawear, file,  line)
 
             if let message = expectFailure {
-                pipline._sinkExpectFailure(file: file, line: line, &subs, exp: exp, errorMessage: message)
+                pipline._sinkExpectFailure(&subs, file, line, exp: exp, errorMessage: message)
             } else {
-                pipline._sinkNoFailure(file: file, line: line, &subs, receiveValue: { _ in print(sut.loggerName); exp.fulfill() })
+                pipline._sinkNoFailure(&subs, file, line, receiveValue: { _ in print(_sut.loggerName); exp.fulfill() })
             }
         }
     }
@@ -126,9 +138,9 @@ extension XCTestCase {
         connectNearbyMetaWear(timeout: .download, useLogger: false) { metawear, exp, subs in
             let pipline =
             metawear.publish()
-                ._assertLoggers([], metawear: metawear, file: file, line: line)
+                ._assertLoggers([], metawear: metawear, file, line)
                 .log(sut)
-                ._assertLoggers([sut.loggerName], metawear: metawear, file: file, line: line)
+                ._assertLoggers([sut.loggerName], metawear: metawear, file, line)
                 .share()
                 .delay(for: 1, tolerance: 0, scheduler: metawear.apiAccessQueue)
                 .logDownload(sut)
@@ -141,12 +153,12 @@ extension XCTestCase {
                     XCTAssertGreaterThan(data.endIndex, 0, file: file, line: line)
                 })
                 .drop(while: { $0.percentComplete < 1 })
-                ._assertLoggers([], metawear: metawear, file: file, line: line)
+                ._assertLoggers([], metawear: metawear, file, line)
 
             if let message = expectFailure {
-                pipline._sinkExpectFailure(file: file, line: line, &subs, exp: exp, errorMessage: message)
+                pipline._sinkExpectFailure(&subs, file, line, exp: exp, errorMessage: message)
             } else {
-                pipline._sinkNoFailure(file: file, line: line, &subs, receiveValue: { _ in print(sut.loggerName); exp.fulfill() })
+                pipline._sinkNoFailure(&subs, file, line, receiveValue: { _ in print(sut.loggerName); exp.fulfill() })
             }
         }
     }
@@ -154,10 +166,10 @@ extension XCTestCase {
     func _testLog2<L1: MWLoggable, L2: MWLoggable>(_ sut1: L1, _ sut2: L2, file: StaticString = #file, line: UInt = #line) {
         connectNearbyMetaWear(timeout: .download, useLogger: false) { metawear, exp, subs in
             metawear.publish()
-                ._assertLoggers([], metawear: metawear, file: file, line: line)
+                ._assertLoggers([], metawear: metawear, file, line)
                 .log(sut1)
                 .log(sut2)
-                ._assertLoggers([sut1.loggerName, sut2.loggerName], metawear: metawear, file: file, line: line)
+                ._assertLoggers([sut1.loggerName, sut2.loggerName], metawear: metawear, file, line)
                 .share()
                 .delay(for: 1, tolerance: 0, scheduler: metawear.apiAccessQueue)
                 .logsDownload()
@@ -172,8 +184,8 @@ extension XCTestCase {
                     XCTAssertTrue(tables.allSatisfy({ $0.rows.isEmpty == false }), file: file, line: line)
                 })
                 .drop(while: { $0.percentComplete < 1 })
-                ._assertLoggers([], metawear: metawear, file: file, line: line)
-                ._sinkNoFailure(file: file, line:line, &subs, receiveValue: { _ in exp.fulfill() })
+                ._assertLoggers([], metawear: metawear, file, line)
+                ._sinkNoFailure(&subs, file, line, receiveValue: { _ in exp.fulfill() })
         }
     }
 }

@@ -9,13 +9,13 @@ import Combine
 /// Celcius
 public struct MWThermometer: MWReadable, MWPollable {
 
-
     /// Celcius
     public typealias DataType = Float
     public typealias RawDataType = Float
     public let columnHeadings = ["Epoch", "Temperature (C)"]
     public let type: Source
     public var pollingRate: MWFrequency
+    public let loggerName: MWLogger = .temperature
 
     public var channel: Int
     /// For external thermistors only. 0 - 5

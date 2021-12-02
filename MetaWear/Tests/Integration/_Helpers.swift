@@ -12,8 +12,8 @@ import CoreBluetooth
 
 extension Publisher {
 
-    func _assertNoFailure(file: StaticString = #file,
-                          line: UInt = #line,
+    func _assertNoFailure(_ file: StaticString = #file,
+                          _ line: UInt = #line,
                           finished: @escaping () -> Void = { },
                           receiveValue: @escaping ((Self.Output) -> Void) = { _ in }
     ) -> AnyPublisher<Output,Failure> {
@@ -29,9 +29,9 @@ extension Publisher {
             .eraseToAnyPublisher()
     }
 
-    func _sinkNoFailure(file: StaticString = #file,
-                        line: UInt = #line,
-                        _ subs: inout Set<AnyCancellable>,
+    func _sinkNoFailure(_ subs: inout Set<AnyCancellable>,
+                        _ file: StaticString = #file,
+                        _ line: UInt = #line,
                         finished: @escaping () -> Void = { },
                         receiveValue: @escaping (Self.Output) -> Void = { _ in }
     ) {
@@ -47,9 +47,9 @@ extension Publisher {
             .store(in: &subs)
     }
 
-    func _sinkExpectFailure(file: StaticString = #file,
-                            line: UInt = #line,
-                            _ subs: inout Set<AnyCancellable>,
+    func _sinkExpectFailure(_ subs: inout Set<AnyCancellable>,
+                            _ file: StaticString = #file,
+                            _ line: UInt = #line,
                             exp: XCTestExpectation,
                             errorMessage: String
     ) {
@@ -74,8 +74,8 @@ extension Publisher {
 
     func _assertLoggers(_ loggers: [MWLogger],
                         metawear: MetaWear,
-                        file: StaticString = #file,
-                        line: UInt = #line
+                        _ file: StaticString = #file,
+                        _ line: UInt = #line
     ) -> AnyPublisher<Output,MWError> {
 
         mapToMetaWearError()
